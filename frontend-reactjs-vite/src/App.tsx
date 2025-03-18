@@ -8,6 +8,9 @@ import HorizontalNavbar from "./modules/client/navigation/HorizontalNavBar/Horiz
 import BottomNavBar from "./modules/client/navigation/BottomNavBar/BottomNavBar";
 
 import ThemeToggle from "./components/Button/ThemeToggleButton";
+import CharityPage from "./modules/charity/CharityPage";
+import CampaignDetail from "./modules/charity/CampaignDetail";
+
 export function App() {
 	const activeAccount = useActiveAccount();
 	// console.log("address", activeAccount?.address);
@@ -34,21 +37,6 @@ export function App() {
 			<div className="stickyBottm">
 				<BottomNavBar toggle={toggle} />
 			</div>
-			{/* <main>
-			{!isConnected ? (
-        		<WelcomeUser />
-				) : (
-    				  <Routes>
-						<Route path="/" element={<Dashboard />} />
-						<Route path="/campaign" element={<Campaigns />} />
-						<Route path="/campaign/:address" element={<CampaignDetails data={[]} />} />
-						<Route path="/user" element={<ProfilePage />} />
-						<Route path="/user/:userAddress" element={<UserDetails />} />
-						<Route path="/scan" element={<QRScanner />} />
-						<Route path="*" element={<WelcomeUser />} />
-    				  </Routes>
-				)}
-			</main> */}
 			<main>
 				{!isConnected ? (
 					<div>Welcome, please connect your account.
@@ -61,6 +49,18 @@ export function App() {
 					</div>
 				)}
 			</main>
+			<Routes>
+				
+				<Route path="/charity" element={<CharityPage />} />
+				<Route path="/charity/:id" element={<CampaignDetail />} />
+				{/* <Route path="/campaign" element={<Campaigns />} />
+				<Route path="/" element={<Dashboard />} />
+				<Route path="/campaign/:address" element={<CampaignDetails data={[]} />} />
+				<Route path="/user" element={<ProfilePage />} />
+				<Route path="/user/:userAddress" element={<UserDetails />} />
+				<Route path="/scan" element={<QRScanner />} />
+				<Route path="*" element={<WelcomeUser />} /> */}
+			</Routes>
 			{/* Footer */}
 			<footer className="bg-[#051F20] text-white text-center py-2 w-full mt-auto">
       		  <p>© Vhack2025 - All Rights Reserved</p>
