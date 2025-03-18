@@ -10,6 +10,7 @@ import BottomNavBar from "./modules/client/navigation/BottomNavBar/BottomNavBar"
 import ThemeToggle from "./components/Button/ThemeToggleButton";
 import CharityPage from "./modules/charity/CharityPage";
 import CampaignDetail from "./modules/charity/CampaignDetail";
+import OrganizationDetail from "./modules/charity/OrganizationDetail";
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -50,9 +51,9 @@ export function App() {
 				)}
 			</main>
 			<Routes>
-				
 				<Route path="/charity" element={<CharityPage />} />
 				<Route path="/charity/:id" element={<CampaignDetail />} />
+				<Route path="/organization/:id" element={<OrganizationDetail />} />
 				{/* <Route path="/campaign" element={<Campaigns />} />
 				<Route path="/" element={<Dashboard />} />
 				<Route path="/campaign/:address" element={<CampaignDetails data={[]} />} />
