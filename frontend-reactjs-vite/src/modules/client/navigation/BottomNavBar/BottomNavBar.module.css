@@ -1,0 +1,93 @@
+/* Base styles for the bottom nav bar */
+.bottomNavContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  border-top: 2px solid #28a745;
+}
+
+.bottomNavWrapper {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.bottomNavLinks {
+  color: #333;
+  text-decoration: none;
+  padding: 10px;
+  font-size: 14px;
+  text-align: center;
+  position: relative;
+}
+
+/* Style for the active nav item */
+.active {
+  color: #28a745;
+}
+
+.active .navIcon {
+  color: #28a745;
+}
+
+/* Green circle indicator for the active link */
+.active::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #28a745;
+  border-radius: 50%;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+}
+
+.navIcon {
+  font-size: 1.2em;
+  color: inherit;
+}
+
+/* Centered Scan Icon */
+.scanIconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #28a745;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  margin: 0 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  bottom: 20px;
+}
+
+.scanIconLink {
+  color: #fff;
+}
+
+.scanIcon {
+  font-size: 1.5em;
+  color: #fff;
+}
+
+/* Responsive styling */
+@media (min-width: 768px) {
+  .bottomNavContainer {
+    display: none;
+  }
+}

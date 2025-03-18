@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings: "slnt" 0;
+}
+
+:root[data-theme="light"] {
+  --background: #f2f7f5;
+  --headline: #00473e;
+  --paragraph: #475d5b;
+  --button: #faae2b;
+  --button-text: #00473e;
+
+  --stroke: #00332c;
+  --main: #f2f7f5;
+  --highlight: #faae2b;
+  --secondary: #ffa8ba;
+  --tertiary: #fa5246;
+
+  --nav-bg: #00332c;
+  --footer-bg: #00332c;
+  --nav-text: #f2f7f5;
+  --footer-text: #f2f7f5;
+}
+
+:root[data-theme="dark"] {
+  --background: #080d0b;
+  --headline: #b8fff5;
+  --paragraph: #a3ccc8;
+  --button: #d68905;
+  --button-text: #080d0b;
+
+  --stroke: #001a17;
+  --main: #080d0b;
+  --highlight: #d68905;
+  --secondary: #570011;
+  --tertiary: #b81105;
+
+  --nav-bg: #001a17;
+  --footer-bg: #001a17;
+  --nav-text: #b8fff5;
+  --footer-text: #b8fff5;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--paragraph);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--headline);
+  }
+
+  .button {
+    background-color: var(--button);
+    color: var(--button-text);
+    @apply px-4 py-2 rounded-md font-semibold transition duration-300;
+  }
+
+  .button:hover {
+    background-color: var(--highlight);
+  }
+}
