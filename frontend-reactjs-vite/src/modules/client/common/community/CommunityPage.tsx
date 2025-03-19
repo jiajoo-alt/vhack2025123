@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUsers, FaSearch, FaHandHoldingHeart, FaBuilding, FaHashtag, FaTags, FaFire, FaClock } from "react-icons/fa";
-import CommunityCard from "../../components/cards/CommunityCard";
+import CommunityCard from "../../../../components/cards/CommunityCard";
 import CommunitySidebar from "./components/CommunitySidebar";
 
 const CommunityPage: React.FC = () => {

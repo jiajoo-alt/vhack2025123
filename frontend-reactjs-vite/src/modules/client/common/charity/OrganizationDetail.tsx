@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaHandHoldingHeart, FaBuilding, FaUsers } from "react-icons/fa";
-import CampaignCard from "../../components/cards/CampaignCard";
+import CampaignCard from "../../../../components/cards/CampaignCard";
 
 const OrganizationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
