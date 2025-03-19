@@ -16,6 +16,8 @@ import ThemeToggle from "./components/Button/ThemeToggleButton";
 import CharityPage from "./modules/charity/CharityPage";
 import CampaignDetail from "./modules/charity/CampaignDetail";
 import OrganizationDetail from "./modules/charity/OrganizationDetail";
+import CommunityPage from "./modules/community/CommunityPage";
+import CommunityDetail from "./modules/community/CommunityDetail";
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -72,6 +74,8 @@ export function App() {
 				<Route path="/charity" element={<CharityPage />} />
 				<Route path="/charity/:id" element={<CampaignDetail />} />
 				<Route path="/organization/:id" element={<OrganizationDetail />} />
+				<Route path="/community" element={<CommunityPage />} />
+				<Route path="/community/:type/:id" element={<CommunityDetail />} />
 
                 {/* Charity-Specific Routes */}
 				{/* Template is as below */}
