@@ -3,9 +3,9 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useRole } from '../contexts/RoleContext';
 
 interface ProtectedRouteProps {
-    allowedRoles?: string[];      // ✅ Supports multiple roles for flexible access
-    isAllowed?: boolean;         // For flexible permission control
-    redirectPath: string;        // Path to redirect unauthorized users
+    allowedRoles?: string[];  
+    isAllowed?: boolean;        
+    redirectPath: string;       
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -15,7 +15,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
     const { userRole, isLoading, roleChecked } = useRole();
 
-    // Prevent navigation until role check completes
     if (!roleChecked || isLoading) {
         return <div>Loading...</div>;
     }
@@ -32,7 +31,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         return <Navigate to={redirectPath} replace />;
     }
 
-    // Permission-Based Control (e.g., Admin-specific pages)
     if (!isAllowed) {
         return <Navigate to={redirectPath} replace />;
     }

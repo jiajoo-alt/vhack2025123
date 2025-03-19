@@ -27,6 +27,11 @@ export function App() {
 	console.log("userRole", userRole);
 	
 	const [isConnected, setIsConnected] = useState(false); 
+	
+    const [isInitialCheckComplete, setIsInitialCheckComplete] = useState(false);
+
+    const toggleConnect = () => setIsConnected(!isConnected);
+
 	const navigate = useNavigate();
 	const [isopen, setisopen] = useState(false);
 	
@@ -42,16 +47,6 @@ export function App() {
 		}
 		console.log("Address: now", activeAccount?.address);
 	  }, [activeAccount]);
-
-	  useEffect(() => {
-        if (roleChecked) {
-            if (!isConnected) {
-                navigate("/register", { replace: true });
-            } else {
-                navigate("/", { replace: true });
-            }
-        }
-    }, [isConnected, roleChecked, navigate]);
 
 	  if (!roleChecked) {
         return <div>Loading...</div>;  // ✅ Loading shown only during Supabase checks
@@ -77,34 +72,41 @@ export function App() {
 				)}
 			</main>
 			<Routes>
-                {/* Register Route for New Users */}
-				<Route path="/register" element={<RegisterPage />} />
+				{!isConnected ? (
+					<>
+                    <Route path="*" element={<Navigate to="/register" replace />} />
 				
-                {/* Common Routes - Available to All Roles */}
-                <Route element={<ProtectedRoute allowedRoles={['charity', 'vendor', 'donor']} redirectPath="/" />}>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/charity" element={<CharityPage />} />
-                    <Route path="/charity/:id" element={<CampaignDetail />} />
-                    <Route path="/organization/:id" element={<OrganizationDetail />} />
-                    <Route path="/community" element={<CommunityPage />} />
-                    <Route path="/community/:type/:id" element={<CommunityDetail />} />
-                </Route>
+					<Route path="/register" element={<RegisterPage />} />
+					</>
+                ) : (
+					<>
+                        {/* Common Routes - Available to All Roles */}
+						<Route element={<ProtectedRoute allowedRoles={['charity', 'vendor', 'donor']} redirectPath="/" />}>
+							<Route path="/" element={<HomePage />} />
+							<Route path="/charity" element={<CharityPage />} />
+							<Route path="/charity/:id" element={<CampaignDetail />} />
+							<Route path="/organization/:id" element={<OrganizationDetail />} />
+							<Route path="/community" element={<CommunityPage />} />
+							<Route path="/community/:type/:id" element={<CommunityDetail />} />
+						</Route>
 
-                {/* Charity-Specific Routes */}
-				<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
-                    {/* path here */}
-                </Route>
+						{/* Charity-Specific Routes */}
+						<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
+							{/* path here */}
+						</Route>
 
-				{/* Vendor-Specific Routes */}
-                <Route element={<ProtectedRoute allowedRoles={['vendor']} redirectPath="/" />}>
-					{/* path here */}
-                </Route>
+						{/* Vendor-Specific Routes */}
+						<Route element={<ProtectedRoute allowedRoles={['vendor']} redirectPath="/" />}>
+							{/* path here */}
+						</Route>
 
-                {/* Donor-Specific Routes */}
-                <Route element={<ProtectedRoute allowedRoles={['donor']} redirectPath="/" />}>
-					{/* path here */}
-                </Route>
-
+						{/* Donor-Specific Routes */}
+						<Route element={<ProtectedRoute allowedRoles={['donor']} redirectPath="/" />}>
+							{/* path here */}
+						</Route>
+                    </>
+                )}
+				
                 {/* Default Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
