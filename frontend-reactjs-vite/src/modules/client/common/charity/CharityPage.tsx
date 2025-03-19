@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import CampaignCard from "../../components/cards/CampaignCard";
+import CampaignCard from "../../../../components/cards/CampaignCard";
 import { FaHandHoldingHeart, FaBuilding, FaSearch } from "react-icons/fa";
-import OrganizationCard from "../../components/cards/OrganizationCard";
+import OrganizationCard from "../../../../components/cards/OrganizationCard";
 import { useNavigate } from "react-router-dom";
 
 

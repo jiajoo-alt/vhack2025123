@@ -14,11 +14,11 @@ import HomePage from "./modules/client/common/Dashboard";
 
 
 import ThemeToggle from "./components/Button/ThemeToggleButton";
-import CharityPage from "./modules/charity/CharityPage";
-import CampaignDetail from "./modules/charity/CampaignDetail";
-import OrganizationDetail from "./modules/charity/OrganizationDetail";
-import CommunityPage from "./modules/community/CommunityPage";
-import CommunityDetail from "./modules/community/CommunityDetail";
+import CharityPage from "./modules/client/common/charity/CharityPage";
+import CampaignDetail from "./modules/client/common/charity/CampaignDetail";
+import OrganizationDetail from "./modules/client/common/charity/OrganizationDetail";
+import CommunityPage from "./modules/client/common/community/CommunityPage";
+import CommunityDetail from "./modules/client/common/community/CommunityDetail";
 
 export function App() {
 	const activeAccount = useActiveAccount();
