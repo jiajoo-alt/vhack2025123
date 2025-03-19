@@ -51,6 +51,29 @@
   --footer-bg: #001a17;
   --nav-text: #b8fff5;
   --footer-text: #b8fff5;
+
+  /* Firefox scrollbar */
+  scrollbar-color: var(--highlight) var(--background);
+  scrollbar-width: thin;
+
+  /* Webkit scrollbar */
+  &::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--highlight);
+    border-radius: 6px;
+    border: 3px solid var(--background);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--button);
+  }
 }
 
 @layer base {
@@ -77,4 +100,40 @@
   .button:hover {
     background-color: var(--highlight);
   }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stroke);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tertiary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--stroke) var(--background);
+}
+
+/* Hide scrollbar when sidebar is collapsed */
+.sidebar-collapsed::-webkit-scrollbar {
+  width: 0px;
+}
+
+.sidebar-collapsed {
+  scrollbar-width: none;
 }
