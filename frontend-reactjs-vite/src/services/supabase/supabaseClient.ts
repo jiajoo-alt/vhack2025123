@@ -10,12 +10,13 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 // Initialize Supabase client
-const supabase = createClient(supabaseUrl, supabaseKey, { 
-    auth: {
-        persistSession: true, // Ensure sessions are persisted
-        autoRefreshToken: true, // Automatically refresh expired tokens
-    },
-}
-);
+// const supabase = createClient(supabaseUrl, supabaseKey, { 
+//     auth: {
+//         persistSession: true, // Ensure sessions are persisted
+//         autoRefreshToken: true, // Automatically refresh expired tokens
+//     },
+// }
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default supabase;
+

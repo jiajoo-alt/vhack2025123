@@ -34,7 +34,7 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       <div className={styles.loginButtonMobileHidden}>
         <div className={styles.icons}>
           <a
-            href="https://github.com/JackyChung2003/My-Universiti-Hackathon-2024"
+            href="https://github.com/JackyChung2003/Vhack-2025"
             target="_blank"
             rel="noreferrer"
           >
