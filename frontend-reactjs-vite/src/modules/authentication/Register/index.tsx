@@ -33,6 +33,7 @@ const RegisterPage: React.FC = () => {
 
     return (
         <div>
+            <h1>This is register temporary page</h1>
             <h1>Register Your Role</h1>
             <select onChange={(e) => setRole(e.target.value)}>
                 <option value="">Select a role</option>

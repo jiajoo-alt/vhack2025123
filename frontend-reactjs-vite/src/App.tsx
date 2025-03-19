@@ -1,9 +1,10 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 
 import HorizontalNavbar from "./modules/client/navigation/HorizontalNavBar/HorizontalNavBar";
 import BottomNavBar from "./modules/client/navigation/BottomNavBar/BottomNavBar";
+import ProtectedRoute from "./utils/ProtectedRoute";
 
 // import { useAuthCheck } from "./hooks/useAuthCheck";
 import { useRole } from "./contexts/RoleContext"; // New role context
@@ -22,10 +23,11 @@ import CommunityDetail from "./modules/community/CommunityDetail";
 export function App() {
 	const activeAccount = useActiveAccount();
 	console.log("address", activeAccount?.address);
-    const { userRole, isLoading, clearRole } = useRole();
+    const { userRole, isLoading, roleChecked, clearRole } = useRole();
 	console.log("userRole", userRole);
 	
 	const [isConnected, setIsConnected] = useState(false); 
+	const navigate = useNavigate();
 	const [isopen, setisopen] = useState(false);
 	
 	const toggle = () => setisopen(!isopen);
@@ -41,9 +43,18 @@ export function App() {
 		console.log("Address: now", activeAccount?.address);
 	  }, [activeAccount]);
 
-    // Show Loading State while Supabase is checking
-	if (isLoading) {
-        return <div>Loading...</div>;  
+	  useEffect(() => {
+        if (roleChecked) {
+            if (!isConnected) {
+                navigate("/register", { replace: true });
+            } else {
+                navigate("/", { replace: true });
+            }
+        }
+    }, [isConnected, roleChecked, navigate]);
+
+	  if (!roleChecked) {
+        return <div>Loading...</div>;  // ✅ Loading shown only during Supabase checks
     }
 
 	return (
@@ -67,32 +78,32 @@ export function App() {
 			</main>
 			<Routes>
                 {/* Register Route for New Users */}
-                {!isLoading && !userRole && <Route path="*" element={<RegisterPage />} />}
-
+				<Route path="/register" element={<RegisterPage />} />
+				
                 {/* Common Routes - Available to All Roles */}
-                <Route path="/" element={<HomePage />} />
-				<Route path="/charity" element={<CharityPage />} />
-				<Route path="/charity/:id" element={<CampaignDetail />} />
-				<Route path="/organization/:id" element={<OrganizationDetail />} />
-				<Route path="/community" element={<CommunityPage />} />
-				<Route path="/community/:type/:id" element={<CommunityDetail />} />
+                <Route element={<ProtectedRoute allowedRoles={['charity', 'vendor', 'donor']} redirectPath="/" />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/charity" element={<CharityPage />} />
+                    <Route path="/charity/:id" element={<CampaignDetail />} />
+                    <Route path="/organization/:id" element={<OrganizationDetail />} />
+                    <Route path="/community" element={<CommunityPage />} />
+                    <Route path="/community/:type/:id" element={<CommunityDetail />} />
+                </Route>
 
                 {/* Charity-Specific Routes */}
-				{/* Template is as below */}
-                {/* <Route
-                    path= "/charity"
-                    element={
-                        userRole === 'charity' ? (
-							<CharityPage />
-                        ) : (
-                            <Navigate to="/" replace />
-                        )
-                    }
-                /> */}
+				<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
+                    {/* path here */}
+                </Route>
 
 				{/* Vendor-Specific Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['vendor']} redirectPath="/" />}>
+					{/* path here */}
+                </Route>
 
-				{/* Donor-Specific Routes */}
+                {/* Donor-Specific Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['donor']} redirectPath="/" />}>
+					{/* path here */}
+                </Route>
 
                 {/* Default Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />

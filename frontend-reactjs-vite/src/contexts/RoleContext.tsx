@@ -4,6 +4,7 @@ import { useAuthCheck } from '../hooks/useAuthCheck';
 interface RoleContextType {
     userRole: string | null;
     isLoading: boolean;
+    roleChecked: boolean;  // ✅ New state added
     clearRole: () => void;
     refetchRole: () => void;
 }
@@ -11,29 +12,30 @@ interface RoleContextType {
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { userRole, isLoading, refetchRole } = useAuthCheck();
-    const [role, setRole] = useState<string | null>(userRole);
+    const { userRole, isLoading, refetchRole, roleChecked } = useAuthCheck();
+    const [role, setRole] = useState<string | null>(null);  // Changed from `userRole` to `null` for better sync
 
-    // Clear role when wallet disconnects
     const clearRole = () => {
         setRole(null);
         localStorage.removeItem('userRole');
     };
 
-    // Refetch role if `userRole` becomes null after Supabase finished checking
+    // Improved logic to handle role updates correctly
     useEffect(() => {
-        if (!isLoading && !userRole) {
-            console.log("Role is null after Supabase finished - Refetching...");
-            refetchRole();
-        } else if (userRole) {
-            setRole(userRole);
-            localStorage.setItem('userRole', userRole);
-            console.log("Role set in context:", userRole);
+        if (roleChecked) {
+            if (userRole) {
+                setRole(userRole);
+                localStorage.setItem('userRole', userRole);
+                console.log("Role set in context:", userRole);
+            } else {
+                console.log("No role found — New User assumed.");
+                setRole(null);
+            }
         }
-    }, [userRole, isLoading]);
+    }, [userRole, roleChecked]);
 
     return (
-        <RoleContext.Provider value={{ userRole: role, isLoading, clearRole, refetchRole }}>
+        <RoleContext.Provider value={{ userRole: role, isLoading, roleChecked, clearRole, refetchRole }}>
             {children}
         </RoleContext.Provider>
     );
