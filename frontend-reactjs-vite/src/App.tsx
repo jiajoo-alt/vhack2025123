@@ -19,6 +19,7 @@ import CampaignDetail from "./modules/client/common/charity/CampaignDetail";
 import OrganizationDetail from "./modules/client/common/charity/OrganizationDetail";
 import CommunityPage from "./modules/client/common/community/CommunityPage";
 import CommunityDetail from "./modules/client/common/community/CommunityDetail";
+import DonorProfile from "./modules/client/donor/profile/DonorProfile";
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -102,7 +103,7 @@ export function App() {
 
 						{/* Donor-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['donor']} redirectPath="/" />}>
-							{/* path here */}
+							<Route path="/donor/profile" element={<DonorProfile />} />
 						</Route>
                     </>
                 )}
