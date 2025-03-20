@@ -1,74 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaEye, FaChartLine, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { charityService, Campaign } from "../../../../../services/supabase/charityService";
+import { toast } from "react-toastify";
 
 const CharityCampaigns: React.FC = () => {
   const navigate = useNavigate();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Mock campaigns data - In real app, fetch from your backend
-  const [campaigns, setCampaigns] = useState([
-    { 
-      id: 1, 
-      name: "Clean Water Initiative", 
-      description: "Providing clean water to communities in need through sustainable infrastructure projects.", 
-      goal: 10000, 
-      currentContributions: 5000, 
-      deadline: "2025-08-31",
-      status: "active"
-    },
-    { 
-      id: 2, 
-      name: "Education for All", 
-      description: "Supporting education programs for underprivileged children around the world.", 
-      goal: 20000, 
-      currentContributions: 15000, 
-      deadline: "2025-03-31",
-      status: "active"
-    },
-    { 
-      id: 3, 
-      name: "Wildlife Conservation", 
-      description: "Protecting endangered species and their habitats through conservation efforts.", 
-      goal: 30000, 
-      currentContributions: 25000, 
-      deadline: "2025-06-27",
-      status: "active"
-    },
-    { 
-      id: 4, 
-      name: "Hunger Relief", 
-      description: "Providing meals and food security to communities facing food insecurity.", 
-      goal: 40000, 
-      currentContributions: 35000, 
-      deadline: "2025-07-27",
-      status: "active"
-    },
-    { 
-      id: 5, 
-      name: "Medical Aid", 
-      description: "Delivering essential medical supplies and healthcare to underserved regions.", 
-      goal: 50000, 
-      currentContributions: 45000, 
-      deadline: "2025-08-27",
-      status: "active"
-    },
-  ]);
+  // Fetch campaigns on component mount
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+        const data = await charityService.getCharityCampaigns();
+        setCampaigns(data);
+        setError(null);
+      } catch (err: any) {
+        console.error("Error fetching campaigns:", err);
+        setError(err.message || "Failed to load campaigns. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleDelete = (id: number) => {
+    fetchCampaigns();
+  }, []);
+
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this campaign?")) {
-      setCampaigns(campaigns.filter(campaign => campaign.id !== id));
-      // In a real app, you would make an API call here to delete the campaign
+      try {
+        await charityService.deleteCampaign(id);
+        setCampaigns(campaigns.filter(campaign => campaign.id !== id));
+        toast.success("Campaign deleted successfully!");
+      } catch (err: any) {
+        console.error("Error deleting campaign:", err);
+        toast.error(err.message || "Failed to delete campaign. Please try again.");
+      }
     }
   };
 
-  const handleView = (id: number) => {
+  const handleView = (id: string) => {
     navigate(`/charity/${id}`);
   };
 
-  const handleEdit = (id: number) => {
-    // In a real app, you would navigate to an edit page or open a modal
-    alert(`Edit campaign ${id}`);
+  const handleEdit = (id: string) => {
+    navigate(`/charity/edit/${id}`);
   };
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading campaigns...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
@@ -79,7 +67,7 @@ const CharityCampaigns: React.FC = () => {
         </p>
       </div>
       
-      <div className="overflow-x-auto">
+      {campaigns.length > 0 ? (
         <table className="w-full">
           <thead className="bg-[var(--background)]">
             <tr>
@@ -92,21 +80,21 @@ const CharityCampaigns: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--stroke)]">
-            {campaigns.map((campaign) => {
-              const progress = (campaign.currentContributions / campaign.goal) * 100;
+            {campaigns.map(campaign => {
+              const progress = (campaign.current_amount / campaign.target_amount) * 100;
               
               return (
                 <tr key={campaign.id} className="hover:bg-[var(--background)] transition-colors">
                   <td className="p-4">
                     <div>
-                      <h3 className="font-medium text-[var(--headline)]">{campaign.name}</h3>
+                      <h3 className="font-medium text-[var(--headline)]">{campaign.title}</h3>
                       <p className="text-sm text-[var(--paragraph)] line-clamp-1">{campaign.description}</p>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-1">
                       <FaMoneyBillWave className="text-[var(--highlight)]" />
-                      <span>${campaign.goal.toLocaleString()}</span>
+                      <span>${campaign.target_amount.toLocaleString()}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -120,13 +108,13 @@ const CharityCampaigns: React.FC = () => {
                           }}
                         ></div>
                       </div>
-                      <span className="text-sm">${campaign.currentContributions.toLocaleString()} ({Math.round(progress)}%)</span>
+                      <span className="text-sm">${campaign.current_amount.toLocaleString()} ({Math.round(progress)}%)</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-1">
                       <FaCalendarAlt className="text-[var(--tertiary)]" />
-                      <span>{new Date(campaign.deadline).toLocaleDateString()}</span>
+                      <span>{campaign.deadline ? new Date(campaign.deadline).toLocaleDateString() : 'No deadline'}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -168,9 +156,7 @@ const CharityCampaigns: React.FC = () => {
             })}
           </tbody>
         </table>
-      </div>
-      
-      {campaigns.length === 0 && (
+      ) : (
         <div className="text-center py-10">
           <p className="text-[var(--paragraph)]">You haven't created any campaigns yet.</p>
         </div>

@@ -3,9 +3,10 @@ import { FaTimes, FaSave } from "react-icons/fa";
 
 interface AddCampaignModalProps {
   onClose: () => void;
+  onSave: (campaignData: FormData) => Promise<void>;
 }
 
-const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose }) => {
+const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -13,6 +14,7 @@ const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose }) => {
     deadline: "",
     image: null as File | null
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,12 +27,27 @@ const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would make an API call here to create the campaign
-    console.log("Campaign data:", formData);
-    alert("Campaign created successfully!");
-    onClose();
+    setLoading(true);
+    
+    try {
+      // Create FormData for file upload
+      const campaignData = new FormData();
+      campaignData.append('name', formData.name);
+      campaignData.append('description', formData.description);
+      campaignData.append('goal', formData.goal);
+      campaignData.append('deadline', formData.deadline);
+      if (formData.image) {
+        campaignData.append('image', formData.image);
+      }
+      
+      await onSave(campaignData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,31 +89,29 @@ const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose }) => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[var(--headline)] mb-2">Funding Goal (USD) *</label>
-                <input
-                  type="number"
-                  name="goal"
-                  value={formData.goal}
-                  onChange={handleChange}
-                  min="1"
-                  className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-[var(--headline)] mb-2">Deadline *</label>
-                <input
-                  type="date"
-                  name="deadline"
-                  value={formData.deadline}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--headline)] mb-2">Funding Goal (USD) *</label>
+              <input
+                type="number"
+                name="goal"
+                value={formData.goal}
+                onChange={handleChange}
+                min="1"
+                className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-[var(--headline)] mb-2">Deadline *</label>
+              <input
+                type="date"
+                name="deadline"
+                value={formData.deadline}
+                onChange={handleChange}
+                className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
+                required
+              />
             </div>
             
             <div>
@@ -116,14 +131,22 @@ const AddCampaignModal: React.FC<AddCampaignModalProps> = ({ onClose }) => {
               type="button"
               onClick={onClose}
               className="px-6 py-3 border border-[var(--stroke)] rounded-lg hover:bg-[var(--background)] transition-colors"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="px-6 py-3 bg-[var(--highlight)] text-white rounded-lg flex items-center gap-2 hover:bg-opacity-90 transition-colors"
+              disabled={loading}
             >
-              <FaSave /> Create Campaign
+              {loading ? (
+                "Creating..."
+              ) : (
+                <>
+                  <FaSave /> Create Campaign
+                </>
+              )}
             </button>
           </div>
         </form>
