@@ -12,10 +12,6 @@ const navBarItems = [
     icon: <FaListAlt />,
   },
   {
-    title: "Scan QR",
-    link: "/scan",
-  },
-  {
     title: "Community",
     link: "/community",
     icon: <FaUsers />,
