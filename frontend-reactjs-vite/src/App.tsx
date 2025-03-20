@@ -94,7 +94,7 @@ export function App() {
 
 						{/* Charity-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
-							<Route path="/charity/profile" element={<CharityProfile />} />
+							<Route path="/Vhack-2025/charity/profile" element={<CharityProfile />} />
 						</Route>
 
 						{/* Vendor-Specific Routes */}

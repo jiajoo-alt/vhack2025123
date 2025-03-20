@@ -48,7 +48,7 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
             className={({ isActive }) =>
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
-            to="/charity/profile"
+            to="/Vhack-2025/charity/profile"
           >
             Charity Profile
           </NavLink>
