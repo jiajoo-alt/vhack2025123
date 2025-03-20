@@ -5,27 +5,55 @@ import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
 import Announcements from "./components/Announcements";
 import AddCampaignModal from "./components/AddCampaignModal";
+import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
+import { toast } from "react-toastify"; // Assuming you use react-toastify for notifications
 
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showAddCampaignModal, setShowAddCampaignModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Mock charity data - In real app, fetch from your backend
-  const [charityData, setCharityData] = useState({
-    name: "Global Relief",
-    description: "A worldwide organization dedicated to providing humanitarian aid in crisis situations.",
+  // Real charity data from Supabase
+  const [charityData, setCharityData] = useState<CharityProfileType>({
+    id: "",
+    name: "",
+    description: "",
     logo: "",
-    founded: "2010",
-    location: "New York, USA",
-    website: "www.globalrelief.org",
-    email: "contact@globalrelief.org",
-    phone: "+1 (555) 123-4567",
-    totalRaised: 250000,
-    activeCampaigns: 5,
-    supporters: 1250,
-    communities: 3
+    founded: "",
+    location: "",
+    website: "",
+    email: "",
+    phone: "",
+    wallet_address: "",
+    role: "charity",
+    verified: false,
+    created_at: "",
+    totalRaised: 0,
+    activeCampaigns: 0,
+    supporters: 0,
+    communities: 0
   });
+
+  // Fetch charity data on component mount
+  useEffect(() => {
+    const fetchCharityData = async () => {
+      try {
+        setLoading(true);
+        const data = await charityService.getCharityProfile();
+        setCharityData(data);
+        setError(null);
+      } catch (err: any) {
+        console.error("Error fetching charity data:", err);
+        setError(err.message || "Failed to load charity profile. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCharityData();
+  }, []);
 
   // Function to scroll to section
   const scrollToSection = (id: string) => {
@@ -35,6 +63,48 @@ const CharityProfile: React.FC = () => {
       setActiveSection(id);
     }
   };
+
+  // Handle saving charity profile changes
+  const handleSaveCharityData = async (updatedData: Partial<CharityProfileType>) => {
+    try {
+      setLoading(true);
+      const savedData = await charityService.updateCharityProfile(updatedData);
+      setCharityData(savedData);
+      setIsEditing(false);
+      toast.success("Charity information updated successfully!");
+    } catch (err: any) {
+      console.error("Error updating charity data:", err);
+      toast.error(err.message || "Failed to update charity information. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle adding a new campaign
+  const handleAddCampaign = async (campaignData: FormData) => {
+    try {
+      setLoading(true);
+      await charityService.createCampaign(campaignData);
+      setShowAddCampaignModal(false);
+      // Refresh charity data to update stats
+      const updatedCharity = await charityService.getCharityProfile();
+      setCharityData(updatedCharity);
+      toast.success("Campaign created successfully!");
+    } catch (err: any) {
+      console.error("Error creating campaign:", err);
+      toast.error(err.message || "Failed to create campaign. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !charityData.name) {
+    return <div className="min-h-screen flex items-center justify-center">Loading charity profile...</div>;
+  }
+
+  if (error && !charityData.name) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -80,7 +150,7 @@ const CharityProfile: React.FC = () => {
               {charityData.logo ? (
                 <img src={charityData.logo} alt={charityData.name} className="w-full h-full object-cover rounded-xl" />
               ) : (
-                charityData.name.charAt(0)
+                charityData.name?.charAt(0) || '?'
               )}
             </div>
             
@@ -89,10 +159,10 @@ const CharityProfile: React.FC = () => {
               <p className="text-[var(--paragraph)] mt-2 max-w-2xl">{charityData.description}</p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <Stat icon={<FaHandHoldingHeart />} value={`$${charityData.totalRaised.toLocaleString()}`} label="Total Raised" />
-                <Stat icon={<FaHandHoldingHeart />} value={charityData.activeCampaigns} label="Active Campaigns" />
-                <Stat icon={<FaUsers />} value={charityData.supporters} label="Supporters" />
-                <Stat icon={<FaUsers />} value={charityData.communities} label="Communities" />
+                <Stat icon={<FaHandHoldingHeart />} value={`$${charityData.totalRaised?.toLocaleString() || '0'}`} label="Total Raised" />
+                <Stat icon={<FaHandHoldingHeart />} value={charityData.activeCampaigns || 0} label="Active Campaigns" />
+                <Stat icon={<FaUsers />} value={charityData.supporters || 0} label="Supporters" />
+                <Stat icon={<FaUsers />} value={charityData.communities || 0} label="Communities" />
               </div>
             </div>
           </div>
@@ -123,7 +193,7 @@ const CharityProfile: React.FC = () => {
             </button>
           </div>
           <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
-            <CharityInfo charity={charityData} isEditing={isEditing} onSave={setCharityData} />
+            <CharityInfo charity={charityData} isEditing={isEditing} onSave={handleSaveCharityData} />
           </div>
         </section>
 
@@ -137,6 +207,7 @@ const CharityProfile: React.FC = () => {
             <button 
               onClick={() => setShowAddCampaignModal(true)}
               className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors"
+              disabled={loading}
             >
               <FaPlus /> Add Campaign
             </button>
@@ -146,11 +217,13 @@ const CharityProfile: React.FC = () => {
           </div>
         </section>
 
-        {/* Community Section */}
+        {/* Community Management Section */}
         <section id="community" className="mb-12 scroll-mt-24 animate-fadeIn">
-          <div className="flex items-center mb-4">
-            <FaUsers className="text-[var(--highlight)] text-xl mr-3" />
-            <h2 className="text-2xl font-bold text-[var(--headline)]">Community Management</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <FaUsers className="text-[var(--highlight)] text-xl mr-3" />
+              <h2 className="text-2xl font-bold text-[var(--headline)]">Community Management</h2>
+            </div>
           </div>
           <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
             <CommunityManagement />
@@ -159,9 +232,11 @@ const CharityProfile: React.FC = () => {
 
         {/* Announcements Section */}
         <section id="announcements" className="mb-12 scroll-mt-24 animate-fadeIn">
-          <div className="flex items-center mb-4">
-            <FaBullhorn className="text-[var(--highlight)] text-xl mr-3" />
-            <h2 className="text-2xl font-bold text-[var(--headline)]">Announcements</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <FaBullhorn className="text-[var(--highlight)] text-xl mr-3" />
+              <h2 className="text-2xl font-bold text-[var(--headline)]">Announcements</h2>
+            </div>
           </div>
           <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
             <Announcements />
@@ -182,7 +257,7 @@ const CharityProfile: React.FC = () => {
 
       {/* Add Campaign Modal */}
       {showAddCampaignModal && (
-        <AddCampaignModal onClose={() => setShowAddCampaignModal(false)} />
+        <AddCampaignModal onClose={() => setShowAddCampaignModal(false)} onSave={handleAddCampaign} />
       )}
     </div>
   );

@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { FaSave, FaGlobe, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
+import { FaGlobe, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaSave, FaImage } from "react-icons/fa";
+import { CharityProfile, charityService } from "../../../../../services/supabase/charityService";
 
 interface CharityInfoProps {
-  charity: {
-    name: string;
-    description: string;
-    logo: string;
-    founded: string;
-    location: string;
-    website: string;
-    email: string;
-    phone: string;
-  };
+  charity: CharityProfile;
   isEditing: boolean;
-  onSave: (updatedCharity: any) => void;
+  onSave: (formData: Partial<CharityProfile>) => Promise<void>;
 }
 
 const CharityInfo: React.FC<CharityInfoProps> = ({ charity, isEditing, onSave }) => {
-  const [formData, setFormData] = useState(charity);
+  const [formData, setFormData] = useState<Partial<CharityProfile>>(charity);
+  const [loading, setLoading] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   
   useEffect(() => {
     setFormData(charity);
@@ -28,11 +23,40 @@ const CharityInfo: React.FC<CharityInfoProps> = ({ charity, isEditing, onSave })
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setLogoFile(file);
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviewLogo(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    // In a real app, you would make an API call here to update the charity info
-    alert("Charity information updated successfully!");
+    setLoading(true);
+    
+    try {
+      let updatedData = { ...formData };
+      
+      // If a new logo was selected, upload it first
+      if (logoFile) {
+        const logoUrl = await charityService.uploadLogo(logoFile);
+        updatedData.logo = logoUrl;
+      }
+      
+      // Save the updated charity data
+      await onSave(updatedData);
+    } catch (error) {
+      console.error("Error saving charity info:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -169,17 +193,34 @@ const CharityInfo: React.FC<CharityInfoProps> = ({ charity, isEditing, onSave })
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-[var(--headline)] mb-2">Logo</label>
+            <label className="block text-sm font-medium text-[var(--headline)] mb-2">
+              <FaImage className="inline mr-2" />
+              Logo
+            </label>
             {isEditing ? (
-              <input
-                type="file"
-                name="logo"
-                className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
-              />
+              <div className="flex flex-col space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="w-full p-3 border border-[var(--stroke)] rounded-lg bg-[var(--background)]"
+                />
+                {previewLogo && (
+                  <div className="w-24 h-24 rounded-xl overflow-hidden">
+                    <img src={previewLogo} alt="Logo preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
             ) : (
-              <p className="text-[var(--paragraph)] p-3 bg-[var(--background)] rounded-lg">
-                {charity.logo ? "Logo uploaded" : "No logo uploaded"}
-              </p>
+              <div className="w-24 h-24 rounded-xl overflow-hidden bg-[var(--background)]">
+                {charity.logo ? (
+                  <img src={charity.logo} alt="Charity logo" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+                    No logo
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
