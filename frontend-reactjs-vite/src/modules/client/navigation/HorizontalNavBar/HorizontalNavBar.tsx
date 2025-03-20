@@ -6,12 +6,15 @@ import logoNameImage from "../../../../assets/images/logo-name.png";
 import logoPNGImage from "../../../../assets/images/logo-png.png";
 import navBarItems from "../navBarItems";
 import styles from "./HorizontalNavbar.module.css"; // Module CSS Import
+import { useRole } from "../../../../contexts/RoleContext";
 
 interface NavbarProps {
   toggle: () => void;
 }
 
 const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
+  const { userRole } = useRole();
+
   return (
     <nav className={styles.nav}>
       <Link to="/" className={styles.link}>
@@ -30,6 +33,16 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
             {item.title}
           </NavLink>
         ))}
+        {userRole === 'donor' && (
+          <NavLink
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+            to="/donor/profile"
+          >
+            My Profile
+          </NavLink>
+        )}
       </div>
       <div className={styles.loginButtonMobileHidden}>
         <div className={styles.icons}>
