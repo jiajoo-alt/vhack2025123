@@ -65,7 +65,7 @@ const CharityHomePage: React.FC = () => {
               Active Campaigns
             </h1>
             <p className="text-[var(--paragraph)]">
-              Explore and support active charity campaigns.
+            Explore your own active ongoing campaign.
             </p>
           </div>
 

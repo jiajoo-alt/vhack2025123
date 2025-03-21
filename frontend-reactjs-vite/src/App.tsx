@@ -84,7 +84,7 @@ export function App() {
 					<>
 						{/* Common Routes - Available to All Roles */}
 						<Route element={<ProtectedRoute allowedRoles={['charity', 'vendor', 'donor']} redirectPath="/" />}>
-							<Route path="/" element={<CharityHomePage />} />
+							<Route path="/" element={<CharityHomePage />} /> 
 							<Route path="/charity" element={<CharityPage />} />
 							<Route path="/charity/:id" element={<CampaignDetail />} />
 							<Route path="/organization/:id" element={<OrganizationDetail />} />
@@ -95,7 +95,7 @@ export function App() {
 						{/* Charity-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
 							<Route path="/Vhack-2025/charity/profile" element={<CharityProfile />} />
-							<Route path="/charity/homepage" element={<CharityHomePage />} />
+							{/* <Route path="/charity/homepage" element={<CharityHomePage />} /> */}
 						</Route>
 
 						{/* Vendor-Specific Routes */}
