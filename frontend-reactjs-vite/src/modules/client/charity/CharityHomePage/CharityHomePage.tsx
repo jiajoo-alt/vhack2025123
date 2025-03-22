@@ -5,51 +5,16 @@ import VendorManagement from "../Vendor/VendorManagement";
 import Announcements from "../profile/components/Announcements"; // Import Announcements
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { mockCampaigns } from "../../../../mocks/campaignData";
 
 const CharityHomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  // Mock data for campaigns
-  const campaigns = [
-    {
-      id: 1,
-      name: "Clean Water Initiative",
-      description: "Providing clean water to communities in need.",
-      goal: 10000,
-      currentContributions: 5000,
-      deadline: "2025-08-31",
-    },
-    {
-      id: 2,
-      name: "Education for All",
-      description: "Supporting education programs for underprivileged children.",
-      goal: 20000,
-      currentContributions: 15000,
-      deadline: "2025-03-31",
-    },
-    {
-      id: 3,
-      name: "Wildlife Conservation",
-      description: "Protecting endangered species and their habitats.",
-      goal: 30000,
-      currentContributions: 25000,
-      deadline: "2025-06-27",
-    },
-    {
-      id: 4,
-      name: "Hunger Relief",
-      description: "Providing meals to communities facing food insecurity.",
-      goal: 40000,
-      currentContributions: 35000,
-      deadline: "2025-07-27",
-    },
-  ];
-
   // Filter campaigns based on the search term
-  const filteredCampaigns = campaigns.filter(
+  const filteredCampaigns = mockCampaigns.filter(
     (campaign) =>
-      campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -113,11 +78,11 @@ const CharityHomePage: React.FC = () => {
               {filteredCampaigns.map((campaign) => (
                 <CampaignCard
                   key={campaign.id}
-                  id={campaign.id}
-                  name={campaign.name}
+                  id={Number(campaign.id)}
+                  name={campaign.title}
                   description={campaign.description}
-                  goal={campaign.goal}
-                  currentContributions={campaign.currentContributions}
+                  goal={campaign.target_amount}
+                  currentContributions={campaign.current_amount}
                   deadline={campaign.deadline}
                 />
               ))}

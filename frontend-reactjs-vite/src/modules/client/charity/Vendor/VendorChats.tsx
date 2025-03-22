@@ -1,20 +1,23 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaCircle } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaUserCircle, FaCircle, FaSearch, FaPlus } from "react-icons/fa";
 import { useVendorChatStore } from "../../../../services/VendorChatService";
+import ChatModal from "./ChatModal";
 
 interface VendorChatsProps {
   limit?: number;
 }
 
 const VendorChats: React.FC<VendorChatsProps> = ({ limit }) => {
-  const navigate = useNavigate();
   const { chats } = useVendorChatStore();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
   
-  // Sort chats by recency (most recent first)
-  const sortedChats = [...chats].sort((a, b) => {
-    // Convert relative timestamps to comparable values
-    // This is a simplified approach - in a real app, you'd use actual timestamps
+  // Filter and sort chats
+  const filteredChats = chats.filter(chat => 
+    chat.vendorName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const sortedChats = [...filteredChats].sort((a, b) => {
     const getTimeValue = (timestamp: string) => {
       if (timestamp.includes("Just now")) return Date.now();
       if (timestamp.includes("hour")) {
@@ -25,69 +28,57 @@ const VendorChats: React.FC<VendorChatsProps> = ({ limit }) => {
         const days = parseInt(timestamp.split(" ")[0]);
         return Date.now() - days * 24 * 60 * 60 * 1000;
       }
-      return 0; // fallback
+      return 0;
     };
     
     return getTimeValue(b.timestamp) - getTimeValue(a.timestamp);
   });
   
-  // Limit the number of chats if specified
   const displayedChats = limit ? sortedChats.slice(0, limit) : sortedChats;
-
-  const handleChatClick = (id: number) => {
-    navigate(`/Vhack-2025/charity/vendor-chats/${id}`);
-  };
-
+  
   return (
-    <div className="bg-[var(--main)] rounded-lg shadow-xl border border-[var(--stroke)] overflow-hidden">
-      <div className="p-4 border-b border-[var(--stroke)]">
-        <h2 className="text-xl font-bold text-[var(--headline)]">Vendor Chats</h2>
-      </div>
+    <div className="bg-[var(--main)] p-6 rounded-lg shadow-xl border border-[var(--stroke)]">
+      <h2 className="text-xl font-bold text-[var(--headline)] mb-4">Vendor Chats</h2>
       
-      <div className="divide-y divide-[var(--stroke)]">
-        {displayedChats.length > 0 ? (
-          displayedChats.map((chat) => (
-            <div
+      {displayedChats.length > 0 ? (
+        <div className="space-y-4">
+          {displayedChats.map(chat => (
+            <div 
               key={chat.id}
-              onClick={() => handleChatClick(chat.id)}
-              className="flex items-center p-4 cursor-pointer transition-all"
+              onClick={() => setActiveChatId(chat.id)}
+              className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex items-center cursor-pointer hover:bg-opacity-90 transition-all"
             >
               <div className="relative mr-3">
-                <FaUserCircle className="text-[var(--highlight)] w-12 h-12" />
+                <FaUserCircle className="text-[var(--highlight)] w-10 h-10" />
                 {chat.online && (
                   <FaCircle className="absolute bottom-0 right-0 text-green-500 text-xs" />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <h3 className={`font-medium truncate ${
-                    chat.unread > 0 ? "text-[var(--headline)] font-semibold" : "text-[var(--paragraph)]"
-                  }`}>
-                    {chat.vendorName}
-                  </h3>
-                  <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                    {chat.timestamp}
-                  </span>
+              <div className="flex-1">
+                <div className="flex justify-between">
+                  <h3 className="font-semibold text-[var(--headline)]">{chat.vendorName}</h3>
+                  <span className="text-xs text-gray-500">{chat.timestamp}</span>
                 </div>
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-sm truncate text-gray-500 max-w-[80%]">
-                    {chat.lastMessage}
-                  </p>
-                  {chat.unread > 0 && (
-                    <span className="bg-[var(--highlight)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {chat.unread}
-                    </span>
-                  )}
-                </div>
+                <p className="text-sm text-[var(--paragraph)] truncate">{chat.lastMessage}</p>
               </div>
+              {chat.unread > 0 && (
+                <span className="bg-[var(--highlight)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-2">
+                  {chat.unread}
+                </span>
+              )}
             </div>
-          ))
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            No vendor chats available
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-500">No chats available</p>
+      )}
+      
+      {activeChatId !== null && (
+        <ChatModal 
+          chatId={activeChatId} 
+          onClose={() => setActiveChatId(null)} 
+        />
+      )}
     </div>
   );
 };
