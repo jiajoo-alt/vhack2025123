@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   line-height: 1.5;
   font-weight: 400;
@@ -166,3 +162,21 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   font-weight: 600;
 }
+
+:root[data-theme="light"] {
+  /* Card-specific variables for light mode */
+  --card-background: #ffffff; /* Bright white background */
+  --card-border: #e0e0e0; /* Light gray border */
+  --card-headline: #333333; /* Dark headline text */
+  --card-paragraph: #666666; /* Gray paragraph text */
+}
+
+:root[data-theme="dark"] {
+  /* Card-specific variables for dark mode */
+  --card-background: #1e1e1e; /* Dark gray background */
+  --card-border: #333333; /* Darker gray border */
+  --card-headline: #ffffff; /* White headline text */
+  --card-paragraph: #cccccc; /* Light gray paragraph text */
+}@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -21,6 +21,8 @@ import CommunityDetail from "./modules/client/common/community/CommunityDetail";
 import DonorProfile from "./modules/client/donor/profile/DonorProfile";
 import CharityProfile from "./modules/client/charity/profile/CharityProfile";
 import CharityHomePage from "./modules/client/charity/CharityHomePage/CharityHomePage";
+import VendorChats from "./modules/client/charity/CharityHomePage/VendorManagement/VendorChats";
+import CreateCampaign from "./components/form/CreateCampaign";
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -95,7 +97,8 @@ export function App() {
 						{/* Charity-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
 							<Route path="/Vhack-2025/charity/profile" element={<CharityProfile />} />
-							{/* <Route path="/charity/homepage" element={<CharityHomePage />} /> */}
+							<Route path="/vendor-chats/*" element={<VendorChats />} />
+							<Route path="/create-campaign" element={<CreateCampaign />} />
 						</Route>
 
 						{/* Vendor-Specific Routes */}

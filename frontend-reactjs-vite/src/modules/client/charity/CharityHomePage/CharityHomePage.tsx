@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import CampaignCard from "../../../../components/cards/CampaignCard";
-import FundManagement from "./FundManagement/FundManagement"; // Import FundManagement
+import FundManagement from "./FundManagement/FundManagement";
+import VendorManagement from "./VendorManagement/VendorManagement";
+import Announcements from "../profile/components/Announcements"; // Import Announcements
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const CharityHomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   // Mock data for campaigns
   const campaigns = [
@@ -49,24 +53,44 @@ const CharityHomePage: React.FC = () => {
       campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleCreateCampaign = () => {
+    navigate("/create-campaign");
+  };
+
   return (
     <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Section: Fund Management */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-6">
           <FundManagement />
         </div>
 
-        {/* Middle Section: Campaign Listing */}
+        {/* Middle Section: Announcements and Campaign Listing */}
         <div className="lg:col-span-6">
-          {/* Header */}
+          {/* Announcements Section */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-[var(--headline)]">
-              Active Campaigns
-            </h1>
-            <p className="text-[var(--paragraph)]">
-            Explore your own active ongoing campaign.
-            </p>
+            <h2 className="text-2xl font-bold text-[var(--headline)] mb-4">
+              Announcements
+            </h2>
+            <Announcements />
+          </div>
+
+          {/* Header */}
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-[var(--headline)]">
+                Active Campaigns
+              </h1>
+              <p className="text-[var(--paragraph)]">
+                Explore your own active ongoing campaign.
+              </p>
+            </div>
+            <button
+              onClick={handleCreateCampaign}
+              className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg shadow-md hover:bg-opacity-90 transition-all"
+            >
+              Create Campaign
+            </button>
           </div>
 
           {/* Search Bar */}
@@ -105,17 +129,9 @@ const CharityHomePage: React.FC = () => {
           )}
         </div>
 
-        {/* Right Section: Placeholder or Additional Content */}
+        {/* Right Section: Vendor Management */}
         <div className="lg:col-span-3">
-          <div className="bg-white border border-gray-300 rounded-lg shadow-md p-4">
-            <h3 className="text-lg font-bold text-[var(--headline)]">
-              Additional Content
-            </h3>
-            <p className="text-[var(--paragraph)]">
-              This section can be used for additional information, links, or
-              widgets.
-            </p>
-          </div>
+          <VendorManagement />
         </div>
       </div>
     </div>

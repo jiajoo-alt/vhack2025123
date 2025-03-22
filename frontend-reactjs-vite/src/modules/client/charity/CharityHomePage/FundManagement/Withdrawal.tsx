@@ -19,9 +19,9 @@ const Withdrawal: React.FC<WithdrawalProps> = ({ withdrawalRequests }) => {
   };
 
   return (
-    <div 
+    <div
       className="bg-[var(--main)] p-6 rounded-lg shadow-xl border border-[var(--stroke)] transition-all transform hover:translate-y-[-8px] hover:shadow-2xl cursor-pointer overflow-hidden"
-      style={{ position: 'relative' }}
+      style={{ position: "relative" }}
     >
       {/* Decorative corner accent */}
       <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--highlight)] opacity-20 rounded-bl-full"></div>
@@ -30,16 +30,16 @@ const Withdrawal: React.FC<WithdrawalProps> = ({ withdrawalRequests }) => {
       {withdrawalRequests.length > 0 ? (
         <ul className="space-y-4">
           {withdrawalRequests.map((request) => (
-            <li 
-              key={request.id} 
-              className="bg-white p-4 rounded-lg shadow-md border border-gray-300 flex justify-between items-center"
+            <li
+              key={request.id}
+              className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex justify-between items-center"
             >
               <div>
-                <p className="text-[var(--headline)] font-semibold">{request.name}</p>
-                <p className="text-sm text-[var(--paragraph)]">
+                <p className="text-[var(--card-headline)] font-semibold">{request.name}</p>
+                <p className="text-sm text-[var(--card-paragraph)]">
                   Goal: ${request.goal.toLocaleString()} | Contributions: ${request.currentContributions.toLocaleString()}
                 </p>
-                <p className="text-sm text-[var(--paragraph)]">Deadline: {request.deadline}</p>
+                <p className="text-sm text-[var(--card-paragraph)]">Deadline: {request.deadline}</p>
               </div>
               <button
                 onClick={() => handleWithdraw(request.id)}
