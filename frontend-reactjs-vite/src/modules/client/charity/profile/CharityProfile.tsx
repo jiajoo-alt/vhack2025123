@@ -3,7 +3,6 @@ import { FaBuilding, FaHandHoldingHeart, FaUsers, FaBullhorn, FaPencilAlt, FaPlu
 import CharityInfo from "./components/CharityInfo";
 import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
-import Announcements from "./components/Announcements";
 import AddCampaignModal from "./components/AddCampaignModal";
 import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
 import { toast } from "react-toastify"; // Assuming you use react-toastify for notifications
@@ -123,7 +122,6 @@ const CharityProfile: React.FC = () => {
               { id: 'info', label: 'Organization Info', icon: <FaBuilding /> },
               { id: 'campaigns', label: 'Campaigns', icon: <FaHandHoldingHeart /> },
               { id: 'community', label: 'Community', icon: <FaUsers /> },
-              { id: 'announcements', label: 'Announcements', icon: <FaBullhorn /> }
             ].map((section) => (
               <button
                 key={section.id}
@@ -227,19 +225,6 @@ const CharityProfile: React.FC = () => {
           </div>
           <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
             <CommunityManagement />
-          </div>
-        </section>
-
-        {/* Announcements Section */}
-        <section id="announcements" className="mb-12 scroll-mt-24 animate-fadeIn">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <FaBullhorn className="text-[var(--highlight)] text-xl mr-3" />
-              <h2 className="text-2xl font-bold text-[var(--headline)]">Announcements</h2>
-            </div>
-          </div>
-          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
-            <Announcements />
           </div>
         </section>
 
