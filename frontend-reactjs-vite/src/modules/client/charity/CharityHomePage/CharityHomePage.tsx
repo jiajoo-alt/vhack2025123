@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import CampaignCard from "../../../../components/cards/CampaignCard";
 import FundManagement from "./FundManagement/FundManagement";
-import VendorManagement from "./VendorManagement/VendorManagement";
+import VendorManagement from "../Vendor/VendorManagement";
 import Announcements from "../profile/components/Announcements"; // Import Announcements
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";

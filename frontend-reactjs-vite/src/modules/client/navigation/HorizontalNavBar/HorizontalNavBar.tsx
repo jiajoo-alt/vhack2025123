@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaBars, FaHome, FaListAlt, FaUsers, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaHome, FaListAlt, FaUsers, FaUserCircle, FaComments } from "react-icons/fa";
 import LoginButton from "../../../../components/Button/LoginButton";
 import logoNameImage from "../../../../assets/images/logo-name.png";
 import logoPNGImage from "../../../../assets/images/logo-png.png";
@@ -30,6 +30,11 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       title: "Community",
       link: "/community",
       icon: <FaUsers />,
+    },
+    {
+      title: "Vendor Chats",
+      link: "/Vhack-2025/charity/vendor-chats",
+      icon: <FaComments />,
     },
     {
       title: "Profile",
