@@ -27,7 +27,12 @@ const RegisterPage: React.FC = () => {
             alert("Failed to register. Please try again.");
         } else {
             alert("Registration successful!");
-            navigate(`/${role}`); // Redirect to their assigned role page
+            // Redirect based on role
+            if (role === 'charity') {
+                navigate('/Vhack-2025/charity/home');
+            } else {
+                navigate(`/${role}`);
+            }
         }
     };
 
