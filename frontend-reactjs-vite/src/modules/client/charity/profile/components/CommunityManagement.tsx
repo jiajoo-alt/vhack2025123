@@ -94,16 +94,6 @@ const CommunityManagement: React.FC = () => {
                   </span>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => handleDeleteCommunity(community.id)}
-                  className="p-2 text-[var(--paragraph)] hover:text-red-500 transition-colors"
-                  title="Delete Community"
-                >
-                  <FaTrash />
-                </button>
-              </div>
             </div>
           ))}
         </div>
