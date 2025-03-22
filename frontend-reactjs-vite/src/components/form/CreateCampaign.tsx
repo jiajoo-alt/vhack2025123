@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa"; // Import the left arrow icon
+import { toast } from "react-toastify";
 
 const CreateCampaign: React.FC = () => {
   const navigate = useNavigate();
@@ -19,9 +20,24 @@ const CreateCampaign: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Campaign Created:", formData);
-    // Add logic to save the campaign (e.g., API call)
-    navigate("/"); // Redirect back to the homepage after submission
+    
+    // Create a new mock campaign with the same structure as our shared mock data
+    const newCampaign = {
+      id: `${Date.now()}`,
+      charity_id: "charity123",
+      title: formData.name,
+      description: formData.description,
+      target_amount: parseFloat(formData.goal),
+      current_amount: 0,
+      status: "active",
+      created_at: new Date().toISOString().split('T')[0],
+      deadline: formData.deadline,
+      image_url: "https://example.com/placeholder.jpg"
+    };
+    
+    console.log("Campaign Created:", newCampaign);
+    toast.success("Campaign created successfully! (Mock data)");
+    navigate("/Vhack-2025/charity/home");
   };
 
   const handleBack = () => {

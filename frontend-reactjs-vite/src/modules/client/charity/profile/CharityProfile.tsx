@@ -83,12 +83,12 @@ const CharityProfile: React.FC = () => {
   const handleAddCampaign = async (campaignData: FormData) => {
     try {
       setLoading(true);
-      await charityService.createCampaign(campaignData);
+      // Instead of calling the service, just log the data
+      console.log("Campaign Created:", Object.fromEntries(campaignData.entries()));
+      
+      // Mock a successful creation
       setShowAddCampaignModal(false);
-      // Refresh charity data to update stats
-      const updatedCharity = await charityService.getCharityProfile();
-      setCharityData(updatedCharity);
-      toast.success("Campaign created successfully!");
+      toast.success("Campaign created successfully! (Mock data)");
     } catch (err: any) {
       console.error("Error creating campaign:", err);
       toast.error(err.message || "Failed to create campaign. Please try again.");
