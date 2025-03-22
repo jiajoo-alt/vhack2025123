@@ -32,8 +32,8 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       icon: <FaUsers />,
     },
     {
-      title: "Vendor Chats",
-      link: "/Vhack-2025/charity/vendor-chats",
+      title: "Vendor",
+      link: "/Vhack-2025/charity/vendor-page",
       icon: <FaComments />,
     },
     {
