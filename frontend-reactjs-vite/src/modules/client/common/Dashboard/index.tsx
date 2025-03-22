@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRole } from '../../../../contexts/RoleContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
     const { userRole, isLoading } = useRole();  // Added `isLoading` for better role checking
-
+    const navigate = useNavigate();
+    
+    // Redirect charity users to their specific home page
+    useEffect(() => {
+        if (!isLoading && userRole === 'charity') {
+            navigate('/Vhack-2025/charity/home');
+        }
+    }, [userRole, isLoading, navigate]);
 
     return (
         <div className="home-container">
