@@ -14,22 +14,25 @@ const LoginPage = () => {
     const [isChecked, setIsChecked] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    
-    const { userRole, roleChecked, isLoading } = useAuthCheck();
+    const { userRole, roleChecked, isLoading, roleFetched } = useAuthCheck();
 
     useEffect(() => {
         console.log("🔎 Checking conditions:");
         console.log("✅ activeAccount:", activeAccount?.address);
         console.log("✅ roleChecked:", roleChecked);
         console.log("✅ isLoading:", isLoading);
-        console.log("✅ userRole:", userRole);
-
-        // Prevent logic if still loading or no account
-        if (!activeAccount || isLoading) return;
-
-        // Ensure `roleChecked` has completed before navigating
-        if (!roleChecked) return;
-
+        console.log("✅ roleFetched:", roleFetched);
+        console.log("✅ userRole (Latest):", userRole);
+    
+        // 🚨 Key Change: Delay navigation until role is set in context
+        if (!activeAccount || isLoading || !roleFetched) return;
+    
+        // ✅ Wait for `userRole` to populate correctly
+        if (userRole === null) {
+            console.log("⏳ Waiting for `userRole` update...");
+            return;  // Prevent navigation while `userRole` is still null
+        }
+    
         if (userRole) {
             console.log("🎯 Role Found:", userRole);
             switch (userRole) {
@@ -43,26 +46,14 @@ const LoginPage = () => {
                     navigate('/donor');
                     break;
                 default:
-                    navigate('/register');  // Unknown role? Ask them to register
+                    navigate('/register');  // Unknown role - Go to Register
             }
         } else {
             console.log("⚠️ No role found — Sending to Register");
             navigate('/register');
         }
-    }, [activeAccount, roleChecked, userRole, isLoading, navigate]);
-    // useEffect(() => {
-    //     if (activeAccount) {
-    //         console.log("HERE AHH activeAccount", activeAccount);
-    //         const userRole = localStorage.getItem('userRole');
-    //         console.log("HERE AHH userRole", userRole);
-    //         if (userRole) {
-    //             // console.log("HEREEEE", userRole);
-    //             navigate('/charity');
-    //         } else {
-    //             // navigate('/register');
-    //         }
-    //     }
-    // }, [activeAccount, navigate]);
+    }, [activeAccount, roleChecked, userRole, isLoading, roleFetched, navigate]);
+    
 
     const handleConnectWallet = async () => {
         if (!isChecked) {
@@ -86,7 +77,6 @@ const LoginPage = () => {
 
     return (
         <div className="login-container">
-            {/* Left Side - Branding & Message */}
             <div className="login-left">
                 <div className="brand-logo">
                     <img src={logoPNGImage} alt="DermaNow Logo" className="logo-login" />
@@ -94,10 +84,10 @@ const LoginPage = () => {
                 <h1>Empower Generosity, Inspire Change</h1>
                 <p>Your donations make a difference. Track your impact in real-time.</p>
 
+                {isLoading && <div className="loading-spinner">⏳ Checking your account...</div>}  {/* ✅ Improved Loader */}
+
                 <div className="testimonial">
-                    <p>
-                        "DermaNow has revolutionized the way I connect with charities. It’s fast, secure, and simple. Highly recommended!"
-                    </p>
+                    <p>"DermaNow has revolutionized the way I connect with charities. It’s fast, secure, and simple. Highly recommended!"</p>
                     <div className="testimonial-author">
                         <img src={profilePicture1} alt="Casey Bachmeyer" className=""/>
                         <div className="author-details">
@@ -108,31 +98,22 @@ const LoginPage = () => {
                 </div>
             </div>
 
-            {/* Right Side - Login Form */}
             <div className="login-right">
                 <h2>Login</h2>
 
-                <p className="welcome-message">
-                    Join a growing community of donors creating positive change.
-                </p>
-
-                {/* Error Message */}
                 {error && <p className="error-message">{error}</p>}
 
-                <LoginButton />
+                <LoginButton onClick={handleConnectWallet} isLoading={isConnecting} />
 
-                {/* Security Info */}
                 <div className="security-info">
                     <p>🔒 Your transactions are secure with blockchain technology.</p>
                 </div>
 
-                {/* Support Links */}
                 <div className="support-links">
                     <span onClick={() => navigate('/faq')} className="link-text">❓ FAQ</span>
                     <span onClick={() => navigate('/contact')} className="link-text">📩 Contact Us</span>
                 </div>
 
-                {/* Register Link */}
                 <p className="signup-footer">
                     Don't have an account yet? 
                     <span onClick={() => navigate('/register')} className="link-text"> Sign Up</span>

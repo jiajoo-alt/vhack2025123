@@ -5,19 +5,18 @@ import supabase from '../services/supabase/supabaseClient';
 export const useAuthCheck = () => {
     const [userRole, setUserRole] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [roleChecked, setRoleChecked] = useState<boolean>(false);  // ✅ New state to prevent infinite refetch
+    const [roleChecked, setRoleChecked] = useState<boolean>(false);
+    const [roleFetched, setRoleFetched] = useState<boolean>(false);
 
     const activeAccount = useActiveAccount();
 
-    const refetchRole = useCallback(async () => {
-        if (!activeAccount?.address) {
-            setUserRole(null);
-            setIsLoading(false);
-            setRoleChecked(true);  // ✅ Mark as checked, even if no role found
-            return;
-        }
-        
-        setIsLoading(true);
+    /**
+     * 🔄 Ensures Supabase role fetching is attempted immediately once AND retries if needed.
+     */
+    const fetchRoleWithRetry = async (retryCount = 3) => {
+        if (!activeAccount?.address) return;  // 🚨 Prevent fetching if no address
+
+        console.log(`🟡 Attempting to fetch role... (Remaining Retries: ${retryCount})`);
 
         const { data, error } = await supabase
             .from('users')
@@ -25,49 +24,56 @@ export const useAuthCheck = () => {
             .eq('wallet_address', activeAccount.address)
             .single();
 
-        if (error || !data?.role) {
-            console.warn("No role found - Assuming New User");
-            setUserRole(null);
-        } else {
-            console.log("Role refetched:", data.role);
+        if (data?.role) {
+            console.log("✅ Role refetched successfully:", data.role);
             setUserRole(data.role);
+            localStorage.setItem('userRole', data.role);  // ✅ Store role in localStorage
+            setRoleFetched(true);
+        } else if (retryCount > 0) {
+            console.warn("⚠️ Role fetch failed - Retrying...");
+            await new Promise(resolve => setTimeout(resolve, 1000)); 
+            return fetchRoleWithRetry(retryCount - 1);  // 🔄 Retry logic
+        } else {
+            console.warn("❗ Final Attempt Failed - No Role Found");
+            setUserRole(null);
+            setRoleFetched(true);  // ✅ Mark as confirmed, even if no role
+        }
+    };
+
+    const refetchRole = useCallback(async () => {
+        if (!activeAccount?.address) {
+            console.warn("❗ No active account found — Clearing role.");
+            setUserRole(null);
+            setIsLoading(false);
+            setRoleChecked(true);
+            setRoleFetched(true);
+            return;
+        }
+
+        // ✅ Immediately attempt one fetch first (before retry logic)
+        const { data } = await supabase
+            .from('users')
+            .select('role')
+            .eq('wallet_address', activeAccount.address)
+            .single();
+
+        if (data?.role) {
+            console.log("✅ Immediate Role Fetch Successful:", data.role);
+            setUserRole(data.role);
+            localStorage.setItem('userRole', data.role);
+            setRoleFetched(true);
+        } else {
+            console.warn("❗ Immediate Role Fetch Failed — Switching to Retry");
+            await fetchRoleWithRetry();  // 🔄 Retry if the first attempt fails
         }
 
         setIsLoading(false);
-        setRoleChecked(true);  // ✅ Mark as checked when the refetch completes
+        setRoleChecked(true);
     }, [activeAccount]);
 
     useEffect(() => {
-        const checkUserRole = async () => {
-            if (!activeAccount?.address) {
-                setIsLoading(false);
-                setUserRole(null);
-                setRoleChecked(true);  // ✅ Mark as checked if no address found
-                return;
-            }
-
-            setIsLoading(true);
-
-            const { data, error } = await supabase
-                .from('users')
-                .select('role')
-                .eq('wallet_address', activeAccount.address)
-                .single();
-
-            if (data?.role) {
-                console.log("Role found:", data.role);
-                setUserRole(data.role);
-            } else {
-                console.warn("No role found - Assuming New User");
-                setUserRole(null);
-            }
-
-            setIsLoading(false);
-            setRoleChecked(true);  // ✅ Mark as checked
-        };
-
-        checkUserRole();
+        refetchRole();
     }, [activeAccount]);
 
-    return { userRole, isLoading, refetchRole, roleChecked };
+    return { userRole, isLoading, refetchRole, roleChecked, roleFetched };
 };

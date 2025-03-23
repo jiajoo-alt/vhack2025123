@@ -70,6 +70,7 @@ const RegisterPage: React.FC = () => {
                 alert("✅ Registration successful!");
                 setTimeout(() => {
                     alert("🎉 Redirecting to the homepage...");
+                    navigate('/'); // Redirect to the homepage
                 }, 2000);
             }
         } catch (error) {
@@ -79,11 +80,6 @@ const RegisterPage: React.FC = () => {
     
         setIsRegistering(false);
     };
-
-    // const handleRegister = async () => {
-    //     navigate('/'); // Navigate to the desired route
-    // };
-
 
     return (
         <div className="register-page">
