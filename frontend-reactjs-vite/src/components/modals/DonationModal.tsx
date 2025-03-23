@@ -1,36 +1,58 @@
 import React, { useState } from "react";
-import { FaTimes, FaHandHoldingHeart, FaCreditCard, FaRegCreditCard, FaRegCalendarAlt, FaLock, FaInfoCircle } from "react-icons/fa";
+import { FaTimes, FaHandHoldingHeart, FaCreditCard, FaRegCreditCard, FaRegCalendarAlt, FaLock, FaInfoCircle, FaArrowRight, FaMoneyBillWave } from "react-icons/fa";
+import { mockDonorAutoDonations } from "../../utils/mockData";
 
 interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDonationComplete: (amount: number, donationPolicy?: string) => void;
+  
+  // Support either the new props
+  targetName?: string;
+  targetType?: 'campaign' | 'organization';
+  targetId?: number;
+  targetCategory?: string;
+  
+  // Or the old props
   campaignId?: number;
   campaignName?: string;
   organizationId?: number;
   organizationName?: string;
-  onDonationComplete?: (amount: number, donationPolicy?: string) => void;
+  
+  donationPolicy?: string;
 }
 
 const DonationModal: React.FC<DonationModalProps> = ({
   isOpen,
   onClose,
+  onDonationComplete,
+  targetName,
+  targetType,
+  targetId,
+  targetCategory,
   campaignId,
   campaignName,
   organizationId,
   organizationName,
-  onDonationComplete,
+  donationPolicy
 }) => {
   const [step, setStep] = useState<'amount' | 'payment' | 'confirmation'>('amount');
   const [donationType, setDonationType] = useState<'one-time' | 'monthly'>('one-time');
-  const [donationPolicy, setDonationPolicy] = useState<'always-donate' | 'campaign-specific'>('always-donate');
+  const [selectedDonationPolicy, setSelectedDonationPolicy] = useState<'always-donate' | 'campaign-specific'>('always-donate');
   const [amount, setAmount] = useState<number | ''>('');
   const [customAmount, setCustomAmount] = useState<boolean>(false);
   
   // Payment form state (placeholder for Stripe)
   const [cardName, setCardName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showAutodonationInfo, setShowAutodonationInfo] = useState(false);
 
   const predefinedAmounts = [10, 25, 50, 100, 250];
+
+  // Derive values from either new or old props
+  const derivedTargetName = targetName || campaignName || organizationName || "";
+  const derivedTargetType = targetType || (campaignId ? 'campaign' : 'organization');
+  const derivedTargetId = targetId || campaignId || organizationId || 0;
 
   const handleAmountSelect = (selectedAmount: number) => {
     setAmount(selectedAmount);
@@ -44,19 +66,15 @@ const DonationModal: React.FC<DonationModalProps> = ({
     }
   };
 
+  const handlePolicyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDonationPolicy(e.target.value === "always-donate" ? 'always-donate' : 'campaign-specific');
+  };
+
   const handleNextStep = () => {
     if (step === 'amount' && amount) {
       setStep('payment');
     } else if (step === 'payment') {
-      // Simulate payment processing
-      setIsProcessing(true);
-      setTimeout(() => {
-        setIsProcessing(false);
-        setStep('confirmation');
-        if (onDonationComplete && typeof amount === 'number') {
-          onDonationComplete(amount, campaignId ? donationPolicy : undefined);
-        }
-      }, 1500);
+      handleSubmit();
     } else if (step === 'confirmation') {
       handleClose();
     }
@@ -77,9 +95,87 @@ const DonationModal: React.FC<DonationModalProps> = ({
     onClose();
   };
 
+  const handleSubmit = () => {
+    setIsProcessing(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      // If this is a monthly donation, create an auto donation record
+      if (donationType === 'monthly') {
+        createAutodonationRecord();
+      }
+      
+      if (onDonationComplete && typeof amount === 'number') {
+        onDonationComplete(amount, campaignId ? donationPolicy : undefined);
+      }
+      setIsProcessing(false);
+      resetForm();
+      onClose();
+    }, 1500);
+  };
+
+  const resetForm = () => {
+    setStep('amount');
+    setAmount('');
+    setCustomAmount(false);
+    setCardName('');
+    setDonationType('one-time');
+    setSelectedDonationPolicy('always-donate');
+  };
+
+  const createAutodonationRecord = () => {
+    // In a real app, this would call an API to create the auto donation record
+    console.log('Creating auto donation record for monthly donation');
+    
+    // Generate a new ID (in a real app, this would come from the backend)
+    const newId = Math.max(...mockDonorAutoDonations.map(d => d.id)) + 1;
+    
+    // Calculate next donation date (1 month from now)
+    const today = new Date();
+    const nextDonationDate = new Date(today);
+    nextDonationDate.setMonth(today.getMonth() + 1);
+    
+    // Create the new auto donation record
+    const newAutodonation = {
+      id: newId,
+      amount: amount,
+      frequency: "monthly",
+      donationType: "direct" as const,
+      directRecipient: {
+        id: derivedTargetId,
+        name: derivedTargetName,
+        type: derivedTargetType,
+        category: targetCategory
+      },
+      startDate: today.toISOString().split('T')[0],
+      nextDonationDate: nextDonationDate.toISOString().split('T')[0],
+      distributions: [
+        {
+          date: today.toISOString().split('T')[0],
+          recipients: [
+            {
+              id: derivedTargetId,
+              name: derivedTargetName,
+              type: derivedTargetType,
+              amount: amount,
+              category: targetCategory
+            }
+          ]
+        }
+      ]
+    };
+    
+    // In a real app, this would be handled by the backend
+    // For now, we'll just log it
+    console.log('New auto donation record:', newAutodonation);
+    
+    // Show info about auto donation management
+    setShowAutodonationInfo(true);
+  };
+
   if (!isOpen) return null;
 
-  const targetName = campaignName || organizationName || "this cause";
+  const displayName = campaignName || organizationName || "this cause";
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -87,7 +183,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-[var(--stroke)] flex justify-between items-center">
           <h2 className="text-xl font-bold text-[var(--headline)]">
-            {step === 'confirmation' ? 'Thank You!' : `Support ${targetName}`}
+            {step === 'confirmation' ? 'Thank You!' : `Support ${displayName}`}
           </h2>
           <button 
             onClick={handleClose}
@@ -126,19 +222,19 @@ const DonationModal: React.FC<DonationModalProps> = ({
                   <div className="space-y-3">
                     <div 
                       className={`p-4 rounded-lg border cursor-pointer ${
-                        donationPolicy === 'always-donate' 
+                        selectedDonationPolicy === 'always-donate' 
                           ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10' 
                           : 'border-[var(--stroke)]'
                       }`}
-                      onClick={() => setDonationPolicy('always-donate')}
+                      onClick={() => setSelectedDonationPolicy('always-donate')}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 ${
-                          donationPolicy === 'always-donate' 
+                          selectedDonationPolicy === 'always-donate' 
                             ? 'border-[var(--highlight)] bg-[var(--highlight)]' 
                             : 'border-[var(--stroke)]'
                         }`}>
-                          {donationPolicy === 'always-donate' && (
+                          {selectedDonationPolicy === 'always-donate' && (
                             <div className="w-full h-full flex items-center justify-center text-white">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -157,19 +253,19 @@ const DonationModal: React.FC<DonationModalProps> = ({
                     
                     <div 
                       className={`p-4 rounded-lg border cursor-pointer ${
-                        donationPolicy === 'campaign-specific' 
+                        selectedDonationPolicy === 'campaign-specific' 
                           ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10' 
                           : 'border-[var(--stroke)]'
                       }`}
-                      onClick={() => setDonationPolicy('campaign-specific')}
+                      onClick={() => setSelectedDonationPolicy('campaign-specific')}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 ${
-                          donationPolicy === 'campaign-specific' 
+                          selectedDonationPolicy === 'campaign-specific' 
                             ? 'border-[var(--highlight)] bg-[var(--highlight)]' 
                             : 'border-[var(--stroke)]'
                         }`}>
-                          {donationPolicy === 'campaign-specific' && (
+                          {selectedDonationPolicy === 'campaign-specific' && (
                             <div className="w-full h-full flex items-center justify-center text-white">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -252,7 +348,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
                 <div className="bg-[var(--background)] p-4 rounded-lg">
                   <div className="flex justify-between mb-2">
                     <span>Donation to:</span>
-                    <span className="font-semibold">{targetName}</span>
+                    <span className="font-semibold">{displayName}</span>
                   </div>
                   <div className="flex justify-between mb-2">
                     <span>Amount:</span>
@@ -266,7 +362,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
                     <div className="flex justify-between">
                       <span>Policy:</span>
                       <span className="font-semibold">
-                        {donationPolicy === 'always-donate' ? 'Always Donate' : 'Campaign Specific'}
+                        {selectedDonationPolicy === 'always-donate' ? 'Always Donate' : 'Campaign Specific'}
                       </span>
                     </div>
                   )}
@@ -329,14 +425,14 @@ const DonationModal: React.FC<DonationModalProps> = ({
               </div>
               <h3 className="text-2xl font-bold text-[var(--headline)] mb-2">Thank You for Your Support!</h3>
               <p className="text-[var(--paragraph)] mb-6">
-                Your donation of ${amount} {donationType === 'monthly' ? 'per month ' : ''}to {targetName} has been processed successfully.
+                Your donation of ${amount} {donationType === 'monthly' ? 'per month ' : ''}to {displayName} has been processed successfully.
               </p>
               {campaignId && (
                 <div className="bg-[var(--background)] p-4 rounded-lg mb-6 text-left">
                   <div className="flex items-start gap-2">
                     <FaInfoCircle className="text-[var(--highlight)] mt-1 flex-shrink-0" />
                     <p className="text-sm">
-                      {donationPolicy === 'always-donate' 
+                      {selectedDonationPolicy === 'always-donate' 
                         ? 'If this campaign does not reach its target by the deadline and not extended, your donation will support other initiatives by the organization.' 
                         : 'If this campaign does not reach its target by the deadline and not extended, your donation will be refunded to you.'}
                     </p>
@@ -386,6 +482,41 @@ const DonationModal: React.FC<DonationModalProps> = ({
           </button>
         </div>
       </div>
+      
+      {/* Auto donation info modal */}
+      {showAutodonationInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--main)] rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaMoneyBillWave className="text-green-600 text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold text-[var(--headline)]">Monthly Donation Set Up!</h3>
+              <p className="text-[var(--paragraph)] mt-2">
+                Your monthly donation of ${amount} to {displayName} has been set up successfully.
+              </p>
+            </div>
+            
+            <div className="bg-[var(--background)] p-4 rounded-lg mb-4">
+              <p className="text-sm">
+                <strong>Important:</strong> You can manage or cancel this recurring donation at any time from the Auto Donations section.
+              </p>
+            </div>
+            
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  setShowAutodonationInfo(false);
+                  window.location.href = '/charity?tab=autoDonate';
+                }}
+                className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg shadow-md hover:bg-opacity-90 transition-all"
+              >
+                Go to Auto Donations
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
