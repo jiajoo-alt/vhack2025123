@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../../../services/supabase/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { useActiveAccount } from 'thirdweb/react'; // Assuming you're using thirdweb
+import { useActiveAccount } from 'thirdweb/react';
+import { useAuthCheck } from '../../../hooks/useAuthCheck'; // ✅ Import Role Check
 import coverPicture from "../../../assets/images/register-page-picture.jpg";
 import ConnectAccButton from '../../../components/Button/ConnectButton';
 import './index.css';
@@ -25,13 +26,35 @@ const RegisterPage: React.FC = () => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const activeAccount = useActiveAccount(); // For wallet connection
+    const activeAccount = useActiveAccount(); 
+    const { userRole, roleFetched } = useAuthCheck(); // ✅ Import Role Check
     const navigate = useNavigate();
+
+    // ✅ Auto-Redirect if Role Already Exists
+    useEffect(() => {
+        if (roleFetched && userRole) {
+            console.log(`✅ Found existing role: ${userRole} - Redirecting...`);
+            switch (userRole) {
+                case 'charity':
+                    navigate('/charity');
+                    break;
+                case 'vendor':
+                    navigate('/vendor');
+                    break;
+                case 'donor':
+                    navigate('/donor');
+                    break;
+                default:
+                    console.warn('❗ Unknown role found:', userRole);
+                    navigate('/dashboard');
+            }
+        }
+    }, [userRole, roleFetched, navigate]);
 
     useEffect(() => {
         if (activeAccount?.address) {
             setWalletAddress(activeAccount.address);
-            localStorage.setItem('walletAddress', activeAccount.address); // Store in localStorage
+            localStorage.setItem('walletAddress', activeAccount.address);
         } else {
             setWalletAddress('Please connect your wallet');
         }
@@ -39,30 +62,29 @@ const RegisterPage: React.FC = () => {
 
     const handleRegister = async () => {
         const walletAddress = localStorage.getItem('walletAddress');
-    
+
         if (!walletAddress || walletAddress === 'Please connect your wallet') {
             setError("❗ Please connect your wallet first.");
             return;
         }
-    
+
         if (!username) {
             setError("❗ Username is required.");
-            console.log("walletAddress", walletAddress);
             return;
         }
-    
+
         setIsRegistering(true);
         setError(null);
-    
+
         const userData = {
             wallet_address: walletAddress,
-            role: role || 'donor',   // Auto-set to 'donor' if no role selected
+            role: role || 'donor', // Auto-set to 'donor' if no role selected
             name: username
         };
-    
+
         try {
             const { error } = await supabase.from('users').insert(userData);
-    
+
             if (error) {
                 console.error('Error registering:', error.message);
                 setError("❌ Failed to register. Please try again.");
@@ -70,14 +92,14 @@ const RegisterPage: React.FC = () => {
                 alert("✅ Registration successful!");
                 setTimeout(() => {
                     alert("🎉 Redirecting to the homepage...");
-                    navigate('/'); // Redirect to the homepage
+                    navigate('/dashboard');  // ✅ Redirect to the dashboard
                 }, 2000);
             }
         } catch (error) {
             console.error('Unexpected error:', error);
             setError("❌ Something went wrong. Please try again.");
         }
-    
+
         setIsRegistering(false);
     };
 
@@ -106,9 +128,7 @@ const RegisterPage: React.FC = () => {
                 </div>
 
                 {/* Auto-filled User Info */}
-
                 <div className="user-info-container">
-                    {/* Left Section - User ID and Wallet Address */}
                     <div className="user-info">
                         <div className="form-group">
                             <label>Wallet Address</label>
@@ -116,12 +136,10 @@ const RegisterPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Right Section - Connect Button */}
                     <div className="connect-button-container">
                         <ConnectAccButton />
                     </div>
                 </div>
-
 
                 {/* Compulsory Username Field */}
                 <div className="form-group">
@@ -133,117 +151,6 @@ const RegisterPage: React.FC = () => {
                         onChange={(e) => setUsername(e.target.value)}
                     />
                 </div>
-
-                {/* Additional Fields for Charity */}
-                {role === 'charity' && (
-                    <div className="charity-fields">
-                        <div className="form-group">
-                            <label>Logo (Optional)</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setLogo(e.target.files?.[0] || null)}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Description (Optional)</label>
-                            <textarea
-                                placeholder="Tell us about your charity"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Location (Optional)</label>
-                            <input
-                                type="text"
-                                placeholder="Enter your location"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Website (Optional)</label>
-                            <input
-                                type="url"
-                                placeholder="https://yourwebsite.com"
-                                value={website}
-                                onChange={(e) => setWebsite(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Email (Optional)</label>
-                            <input
-                                type="email"
-                                placeholder="example@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Phone (Optional)</label>
-                            <input
-                                type="tel"
-                                placeholder="Enter your phone number"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Additional Fields for Vendor */}
-                {role === 'vendor' && (
-                    <div className="vendor-fields">
-
-                        {/* SSM Field */}
-                        <div className="form-group">
-                            <label>SSM (Required)</label>
-                            <input
-                                type="file"
-                                accept=".pdf, .jpg, .png"
-                                onChange={(e) => setSSM(e.target.files?.[0] || null)}
-                            />
-                            {ssm && (
-                                <p className="file-preview">
-                                    📄 {ssm.name}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Company TIN Number */}
-                        <div className="form-group">
-                            <label>Company TIN Number (Required)</label>
-                            <input
-                                type="text"
-                                placeholder="Enter Company TIN Number"
-                                value={tinNumber}
-                                onChange={(e) => setTinNumber(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Business Bank Statement */}
-                        <div className="form-group">
-                            <label>Business Bank Statement (Required)</label>
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => setBankStatement(e.target.files?.[0] || null)}
-                            />
-                            {bankStatement && (
-                                <p className="file-preview">
-                                    📄 {bankStatement.name}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 {/* Error Message */}
                 {error && <p className="error-message">{error}</p>}
