@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { FaUsers, FaComments, FaClock, FaBullhorn, FaTrash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUsers, FaComments, FaClock, FaBullhorn, FaTrash, FaPlus, FaExternalLinkAlt, FaCog } from "react-icons/fa";
 
 const CommunityManagement: React.FC = () => {
+  const navigate = useNavigate();
+  
   // Mock community data - In real app, fetch from your backend
   const [communities, setCommunities] = useState([
     {
@@ -22,11 +25,20 @@ const CommunityManagement: React.FC = () => {
     }
   ]);
 
-  const handleDeleteCommunity = (id: number) => {
+  const handleDeleteCommunity = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation when clicking delete
     if (window.confirm("Are you sure you want to delete this community?")) {
       setCommunities(communities.filter(community => community.id !== id));
       // In a real app, make an API call to delete the community
     }
+  };
+
+  const navigateToGeneralCommunities = () => {
+    navigate('/charity/general-communities');
+  };
+
+  const navigateToCommunity = (type: string, id: number) => {
+    navigate(`/charity/community/${type}/${id}`);
   };
 
   return (
@@ -65,6 +77,23 @@ const CommunityManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4">
+        <button
+          onClick={navigateToGeneralCommunities}
+          className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2"
+        >
+          <FaUsers /> Manage General Fund Communities
+        </button>
+        
+        <button
+          onClick={() => {/* Add logic to create new community */}}
+          className="px-4 py-2 bg-[var(--secondary)] text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2"
+        >
+          <FaPlus /> Create New Community
+        </button>
+      </div>
+
       {/* Communities List */}
       <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
         <div className="p-6 border-b border-[var(--stroke)]">
@@ -76,7 +105,11 @@ const CommunityManagement: React.FC = () => {
         
         <div className="divide-y divide-[var(--stroke)]">
           {communities.map(community => (
-            <div key={community.id} className="p-6 flex items-center justify-between hover:bg-[var(--background)] transition-colors">
+            <div 
+              key={community.id} 
+              className="p-6 flex items-center justify-between hover:bg-[var(--background)] transition-colors cursor-pointer"
+              onClick={() => navigateToCommunity(community.type, community.id)}
+            >
               <div className="flex-1">
                 <h3 className="font-medium text-[var(--headline)]">{community.name}</h3>
                 <div className="flex items-center gap-4 mt-2 text-sm text-[var(--paragraph)]">
@@ -93,6 +126,25 @@ const CommunityManagement: React.FC = () => {
                     {community.lastActive}
                   </span>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToCommunity(community.type, community.id);
+                  }}
+                  className="p-2 text-[var(--highlight)] hover:bg-[var(--highlight)] hover:bg-opacity-10 rounded-full transition-colors"
+                  title="Manage Community"
+                >
+                  <FaCog />
+                </button>
+                <button 
+                  onClick={(e) => handleDeleteCommunity(community.id, e)}
+                  className="p-2 text-red-500 hover:bg-red-500 hover:bg-opacity-10 rounded-full transition-colors"
+                  title="Delete Community"
+                >
+                  <FaTrash />
+                </button>
               </div>
             </div>
           ))}

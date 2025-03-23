@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaBars, FaHome, FaListAlt, FaUsers, FaUserCircle, FaComments } from "react-icons/fa";
+import { FaBars, FaHome, FaListAlt, FaUsers, FaUserCircle, FaComments, FaChartLine } from "react-icons/fa";
 import LoginButton from "../../../../components/Button/LoginButton";
 import logoNameImage from "../../../../assets/images/logo-name.png";
 import logoPNGImage from "../../../../assets/images/logo-png.png";
@@ -22,14 +22,9 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       icon: <FaHome />,
     },
     {
-      title: "Charity",
-      link: "/charity",
-      icon: <FaListAlt />,
-    },
-    {
-      title: "Community",
-      link: "/community",
-      icon: <FaUsers />,
+      title: "Management",
+      link: "/charity-management",
+      icon: <FaChartLine />,
     },
     {
       title: "Vendor",
@@ -54,11 +49,6 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       title: "Charity",
       link: "/charity",
       icon: <FaListAlt />,
-    },
-    {
-      title: "Community",
-      link: "/community",
-      icon: <FaUsers />,
     },
   ];
 
