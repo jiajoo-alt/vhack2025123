@@ -7,22 +7,23 @@ export interface Campaign {
   currentContributions: number;
   deadline: string;
   organizationId: number;
+  category: string;
 }
 
 // Mock data for all campaigns and donor contributions
 export const mockCampaigns: Campaign[] = [
-  { id: 1, name: "Clean Water Initiative", description: "Providing clean water to communities in need through sustainable infrastructure projects.", goal: 10000, currentContributions: 5000, deadline: "2025-08-31", organizationId: 1 },
-  { id: 2, name: "Education for All", description: "Supporting education programs for underprivileged children around the world.", goal: 20000, currentContributions: 15000, deadline: "2025-03-31", organizationId: 2 },
-  { id: 3, name: "Wildlife Conservation", description: "Protecting endangered species and their habitats through conservation efforts.", goal: 30000, currentContributions: 25000, deadline: "2025-06-27", organizationId: 3 },
-  { id: 4, name: "Hunger Relief", description: "Providing meals and food security to communities facing food insecurity.", goal: 40000, currentContributions: 35000, deadline: "2025-07-27", organizationId: 5 },
-  { id: 5, name: "Medical Aid", description: "Delivering essential medical supplies and healthcare to underserved regions.", goal: 50000, currentContributions: 45000, deadline: "2025-08-27", organizationId: 4 },
-  { id: 6, name: "Disaster Relief", description: "Providing immediate assistance to communities affected by natural disasters.", goal: 60000, currentContributions: 55000, deadline: "2025-09-27", organizationId: 1 },
-  { id: 7, name: "Renewable Energy", description: "Implementing renewable energy solutions in developing communities.", goal: 70000, currentContributions: 65000, deadline: "2025-10-27", organizationId: 6 },
-  { id: 8, name: "Women Empowerment", description: "Supporting programs that empower women through education and economic opportunities.", goal: 80000, currentContributions: 75000, deadline: "2025-11-27", organizationId: 2 },
-  { id: 9, name: "Mental Health Support", description: "Providing mental health resources and support to those in need.", goal: 90000, currentContributions: 85000, deadline: "2025-12-27", organizationId: 4 },
-  { id: 10, name: "Ocean Cleanup", description: "Removing plastic and pollution from oceans to protect marine life.", goal: 100000, currentContributions: 95000, deadline: "2026-01-27", organizationId: 6 },
-  { id: 100, name: "Global Relief Campaign 1", description: "This is a campaign by Global Relief focused on addressing specific needs in target communities.", goal: 20000, currentContributions: 15000, deadline: "2025-08-31", organizationId: 1 },
-  { id: 101, name: "Global Relief Campaign 2", description: "This is a campaign by Global Relief focused on addressing specific needs in target communities.", goal: 30000, currentContributions: 20000, deadline: "2025-08-31", organizationId: 1 }
+  { id: 1, name: "Clean Water Initiative", description: "Providing clean water to communities in need through sustainable infrastructure projects.", goal: 10000, currentContributions: 5000, deadline: "2025-08-31", organizationId: 1, category: "Health & Medical" },
+  { id: 2, name: "Education for All", description: "Supporting education programs for underprivileged children around the world.", goal: 20000, currentContributions: 15000, deadline: "2025-03-31", organizationId: 2, category: "Education" },
+  { id: 3, name: "Wildlife Conservation", description: "Protecting endangered species and their habitats through conservation efforts.", goal: 30000, currentContributions: 25000, deadline: "2025-06-27", organizationId: 3, category: "Environment" },
+  { id: 4, name: "Hunger Relief", description: "Providing meals and food security to communities facing food insecurity.", goal: 40000, currentContributions: 35000, deadline: "2025-07-27", organizationId: 5, category: "Poverty & Hunger" },
+  { id: 5, name: "Medical Aid", description: "Delivering essential medical supplies and healthcare to underserved regions.", goal: 50000, currentContributions: 45000, deadline: "2025-08-27", organizationId: 4, category: "Health & Medical" },
+  { id: 6, name: "Disaster Relief", description: "Providing immediate assistance to communities affected by natural disasters.", goal: 60000, currentContributions: 55000, deadline: "2025-09-27", organizationId: 1, category: "Disaster Relief" },
+  { id: 7, name: "Renewable Energy", description: "Implementing renewable energy solutions in developing communities.", goal: 70000, currentContributions: 65000, deadline: "2025-10-27", organizationId: 6, category: "Environment" },
+  { id: 8, name: "Women Empowerment", description: "Supporting programs that empower women through education and economic opportunities.", goal: 80000, currentContributions: 75000, deadline: "2025-11-27", organizationId: 2, category: "Community Development" },
+  { id: 9, name: "Mental Health Support", description: "Providing mental health resources and support to those in need.", goal: 90000, currentContributions: 85000, deadline: "2025-12-27", organizationId: 4, category: "Health & Medical" },
+  { id: 10, name: "Ocean Cleanup", description: "Removing plastic and pollution from oceans to protect marine life.", goal: 100000, currentContributions: 95000, deadline: "2026-01-27", organizationId: 6, category: "Environment" },
+  { id: 100, name: "Global Relief Campaign 1", description: "This is a campaign by Global Relief focused on addressing specific needs in target communities.", goal: 20000, currentContributions: 15000, deadline: "2025-08-31", organizationId: 1, category: "Community Development" },
+  { id: 101, name: "Global Relief Campaign 2", description: "This is a campaign by Global Relief focused on addressing specific needs in target communities.", goal: 30000, currentContributions: 20000, deadline: "2025-08-31", organizationId: 1, category: "Human Rights" }
 ];
 
 // Define the Organization interface
@@ -72,7 +73,8 @@ export const mockDonorContributions = {
       currentContributions: 5000, 
       deadline: "2025-08-31",
       donorContribution: 500,
-      organizationId: 1
+      organizationId: 1,
+      category: "Health & Medical"
     },
     { 
       id: 3, 
@@ -82,7 +84,8 @@ export const mockDonorContributions = {
       currentContributions: 25000, 
       deadline: "2025-06-27",
       donorContribution: 1200,
-      organizationId: 3
+      organizationId: 3,
+      category: "Environment"
     },
     { 
       id: 100, 
@@ -92,7 +95,8 @@ export const mockDonorContributions = {
       currentContributions: 15000, 
       deadline: "2025-08-31",
       donorContribution: 1500,
-      organizationId: 1
+      organizationId: 1,
+      category: "Community Development"
     },
     { 
       id: 101, 
@@ -102,7 +106,8 @@ export const mockDonorContributions = {
       currentContributions: 20000, 
       deadline: "2025-08-31",
       donorContribution: 1000,
-      organizationId: 1
+      organizationId: 1,
+      category: "Human Rights"
     }
   ] as SupportedCampaign[],
   
