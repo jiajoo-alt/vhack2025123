@@ -135,4 +135,204 @@ export const mockDonorContributions = {
     { id: 1, name: "Global Relief", totalContribution: 2500 },
     { id: 3, name: "Nature First", totalContribution: 1200 }
   ] as SupportedOrganization[]
-}; 
+};
+
+// Update the AutoDonation interface to include direct recurring donations
+export interface AutoDonation {
+  id: number;
+  amount: number;
+  frequency: string;
+  startDate: string;
+  nextDonationDate: string;
+  // New field to distinguish between category-based and direct donations
+  donationType: 'category-based' | 'direct';
+  // For category-based donations
+  categories?: string[];
+  // For direct donations
+  directRecipient?: {
+    id: number;
+    name: string;
+    type: 'campaign' | 'organization';
+    category?: string;
+  };
+  distributions: {
+    date: string;
+    recipients: {
+      id: number;
+      name: string;
+      type: 'campaign' | 'organization';
+      amount: number;
+      category?: string;
+    }[];
+  }[];
+}
+
+export const mockDonorAutoDonations: AutoDonation[] = [
+  {
+    id: 1,
+    amount: 50,
+    frequency: "monthly",
+    donationType: "category-based",
+    categories: ["Health & Medical"],
+    startDate: "2024-01-15",
+    nextDonationDate: "2024-05-15",
+    distributions: [
+      {
+        date: "2024-04-15",
+        recipients: [
+          { 
+            id: 1, 
+            name: "Clean Water Initiative", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          },
+          { 
+            id: 2, 
+            name: "Medical Research Fund", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          }
+        ]
+      },
+      {
+        date: "2024-03-15",
+        recipients: [
+          { 
+            id: 1, 
+            name: "Clean Water Initiative", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          },
+          { 
+            id: 9, 
+            name: "Mental Health Support", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 2,
+    amount: 100,
+    frequency: "quarterly",
+    donationType: "category-based",
+    categories: ["Environment"],
+    startDate: "2024-02-20",
+    nextDonationDate: "2024-05-20",
+    distributions: [
+      {
+        date: "2024-02-20",
+        recipients: [
+          { 
+            id: 3, 
+            name: "Wildlife Conservation", 
+            type: "campaign", 
+            amount: 50, 
+            category: "Environment" 
+          },
+          { 
+            id: 7, 
+            name: "Renewable Energy", 
+            type: "campaign", 
+            amount: 50, 
+            category: "Environment" 
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 3,
+    amount: 25,
+    frequency: "monthly",
+    donationType: "direct",
+    directRecipient: {
+      id: 1,
+      name: "Clean Water Initiative",
+      type: "campaign",
+      category: "Health & Medical"
+    },
+    startDate: "2024-03-10",
+    nextDonationDate: "2024-05-10",
+    distributions: [
+      {
+        date: "2024-04-10",
+        recipients: [
+          { 
+            id: 1, 
+            name: "Clean Water Initiative", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          }
+        ]
+      },
+      {
+        date: "2024-03-10",
+        recipients: [
+          { 
+            id: 1, 
+            name: "Clean Water Initiative", 
+            type: "campaign", 
+            amount: 25, 
+            category: "Health & Medical" 
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 4,
+    amount: 50,
+    frequency: "monthly",
+    donationType: "direct",
+    directRecipient: {
+      id: 3,
+      name: "Nature First",
+      type: "organization"
+    },
+    startDate: "2024-02-15",
+    nextDonationDate: "2024-05-15",
+    distributions: [
+      {
+        date: "2024-04-15",
+        recipients: [
+          { 
+            id: 3, 
+            name: "Nature First", 
+            type: "organization", 
+            amount: 50
+          }
+        ]
+      },
+      {
+        date: "2024-03-15",
+        recipients: [
+          { 
+            id: 3, 
+            name: "Nature First", 
+            type: "organization", 
+            amount: 50
+          }
+        ]
+      },
+      {
+        date: "2024-02-15",
+        recipients: [
+          { 
+            id: 3, 
+            name: "Nature First", 
+            type: "organization", 
+            amount: 50
+          }
+        ]
+      }
+    ]
+  }
+]; 

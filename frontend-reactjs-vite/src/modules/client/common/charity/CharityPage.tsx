@@ -11,13 +11,15 @@ import {
   FaChevronDown, 
   FaChevronUp, 
   FaTimes, 
-  FaListUl 
+  FaListUl, 
+  FaMoneyBillWave
 } from "react-icons/fa";
 import OrganizationCard from "../../../../components/cards/OrganizationCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useRole } from "../../../../contexts/RoleContext";
 import DonorSupportedCampaigns from "./DonorSupportedCampaigns";
 import { mockCampaigns, mockOrganizations } from "../../../../utils/mockData";
+import AutoDonation from "./AutoDonation";
 
 // Define available campaign categories
 const campaignCategories = [
@@ -46,7 +48,18 @@ const sortOptions = [
 ];
 
 const CharityPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'organizations' | 'supported'>('campaigns');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'organizations' | 'supported' | 'autoDonate'>(() => {
+    // Check if there's a tab parameter in the URL
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    
+    if (tabParam === 'autoDonate' && userRole === 'donor') {
+      return 'autoDonate';
+    }
+    
+    return 'campaigns';
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("default");
@@ -172,6 +185,20 @@ const CharityPage: React.FC = () => {
             My Supported
           </button>
         )}
+
+        {userRole === 'donor' && (
+          <button
+            className={`px-6 py-3 font-semibold flex items-center gap-2 transition-colors ${
+              activeTab === 'autoDonate'
+                ? 'text-[var(--highlight)] border-b-2 border-[var(--highlight)]'
+                : 'text-[var(--paragraph)] hover:text-[var(--headline)]'
+            }`}
+            onClick={() => setActiveTab('autoDonate')}
+          >
+            <FaMoneyBillWave />
+            Auto Donation
+          </button>
+        )}
       </div>
       
       {/* Content based on active tab */}
@@ -199,12 +226,7 @@ const CharityPage: React.FC = () => {
             }`}
           >
             <div className="bg-gradient-to-r from-[var(--main)] to-white border border-[var(--stroke)] rounded-lg shadow-sm p-5">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-[var(--headline)] flex items-center gap-2">
-                  <FaListUl className="text-[var(--highlight)]" />
-                  Refine Results
-                </h3>
-                
+              <div className="flex justify-between items-center mb-4">                
                 {/* Results count */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-[var(--paragraph)]">
@@ -391,6 +413,10 @@ const CharityPage: React.FC = () => {
               <p className="text-lg">No organizations found matching your search.</p>
             </div>
           )}
+        </>
+      ) : activeTab === 'autoDonate' ? (
+        <>
+          <AutoDonation />
         </>
       ) : (
         <>
