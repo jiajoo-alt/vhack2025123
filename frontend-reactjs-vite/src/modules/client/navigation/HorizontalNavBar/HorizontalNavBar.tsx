@@ -19,7 +19,8 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
     <nav className={styles.nav}>
       <Link to="/" className={styles.link}>
         <img src={logoPNGImage} alt="Power Stake Name" className={styles.logoIcon} />
-        <img src={logoNameImage} alt="Power Stake Name" className={styles.logoName} />
+        {/* <img src={logoNameImage} alt="Power Stake Name" className={styles.logoName} /> */}
+        <span className={styles.logoName}>DermaNow</span>
       </Link>
       <div className={styles.menuItems}>
         {navBarItems.map((item, index) => (

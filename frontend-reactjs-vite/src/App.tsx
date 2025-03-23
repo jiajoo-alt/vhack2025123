@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
+import "./App.css";
 
 import HorizontalNavbar from "./modules/client/navigation/HorizontalNavBar/HorizontalNavBar";
 import BottomNavBar from "./modules/client/navigation/BottomNavBar/BottomNavBar";
@@ -9,7 +10,8 @@ import ProtectedRoute from "./utils/ProtectedRoute";
 // import { useAuthCheck } from "./hooks/useAuthCheck";
 import { useRole } from "./contexts/RoleContext"; // New role context
 import RegisterPage from "./modules/authentication/Register";
-
+import ConnectWalletPage from "./modules/authentication/ConnectWallet";
+import LoginPage from "./modules/authentication/Login";
 import HomePage from "./modules/client/common/Dashboard";
 
 
@@ -51,7 +53,7 @@ export function App() {
 	  }, [activeAccount]);
 
 	  if (!roleChecked) {
-        return <div>Loading...</div>;  // ✅ Loading shown only during Supabase checks
+        return <div>Loading in app.tsx...</div>;  // ✅ Loading shown only during Supabase checks
     }
 
 	return (
@@ -60,25 +62,13 @@ export function App() {
 			<div className="stickyBottm">
 				<BottomNavBar toggle={toggle} />
 			</div>
-
-			<main>
-				{!isConnected ? (
-					<div>Welcome, please connect your account.
-						<ThemeToggle />
-					</div>
-				) : (
-					<div>Welcome back, your account is connected.
-						<ThemeToggle />
-
-					</div>
-				)}
-			</main>
 			<Routes>
-				{!isConnected ? (
+				{/* {(!isConnected ) ? ( */}
+				{(!isConnected || !roleChecked) ? (
 					<>
-                    <Route path="*" element={<Navigate to="/register" replace />} />
-				
-					<Route path="/register" element={<RegisterPage />} />
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/register" element={<RegisterPage />} />
+            			<Route path="*" element={<Navigate to="/login" replace />} />
 					</>
                 ) : (
 					<>
@@ -106,6 +96,9 @@ export function App() {
 						<Route element={<ProtectedRoute allowedRoles={['donor']} redirectPath="/" />}>
 							<Route path="/donor/profile" element={<DonorProfile />} />
 						</Route>
+
+						<Route path="/register" element={<RegisterPage />} />
+						<Route path="/login" element={<LoginPage />} />
                     </>
                 )}
 				
@@ -113,8 +106,8 @@ export function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
 			{/* Footer */}
-			<footer className="bg-[#051F20] text-white text-center py-2 w-full mt-auto">
-      		  <p>© Vhack2025 - All Rights Reserved</p>
+			<footer className="footer">
+				<p>© Vhack2025 - All Rights Reserved</p>
       		</footer>
 		</div>
 	);

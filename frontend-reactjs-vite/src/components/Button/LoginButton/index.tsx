@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ConnectButton, useActiveAccount, lightTheme } from "thirdweb/react";
 import { client, chain } from "../../../utils/constants";
 import { useRole } from '../../../contexts/RoleContext';
+import logoPNGImage from "../../../assets/images/logo-png.png";
 
 const customTheme = lightTheme({
     colors: {
@@ -55,7 +56,6 @@ const LoginButton: React.FC = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            // height: "100vh",
         }}>
             {account ? (
                 <div style={{ textAlign: "center"}}>
@@ -63,10 +63,10 @@ const LoginButton: React.FC = () => {
                         client={client}
                         chain={chain}
                         connectModal={{
-                            title: "Sign in to MyApp",
+                            title: "Sign in to Your Account",
                             // titleIcon: ,
-                            size: "compact",
-                            // size: "wide",
+                            // size: "compact",
+                            size: "wide",
                         }}
                         onDisconnect={handleLogout} // Role logic handled during disconnect
                     />
@@ -77,17 +77,22 @@ const LoginButton: React.FC = () => {
                         client={client}
                         chain={chain}
                         theme={customTheme}
+                         connectButton={{
+                            label: "Sign in",
+                            style: {
+                                fontSize: "18px",     // Larger text for better readability
+                            }
+                        }}
                         connectModal={{
-                            title: "Sign in to MyApp",
-                            // titleIcon: ,
-                            size: "compact",
-                            // size: "wide",
+                            title: "Sign in to Your Account",
+                            titleIcon: logoPNGImage,
+                            // size: "compact",
+                            size: "wide",
                           }}
                           onConnect={handleLogin} // Role logic handled during connect
                    />
                 </div>
             )}
-            {userRole && <p>Welcome, {userRole}!</p>}
         </div>
     )
 }

@@ -16,7 +16,7 @@ export const useAuthCheck = () => {
             setRoleChecked(true);  // ✅ Mark as checked, even if no role found
             return;
         }
-
+        
         setIsLoading(true);
 
         const { data, error } = await supabase

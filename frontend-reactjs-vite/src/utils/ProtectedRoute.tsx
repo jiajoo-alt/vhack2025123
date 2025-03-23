@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation  } from 'react-router-dom';
 import { useRole } from '../contexts/RoleContext';
 
 interface ProtectedRouteProps {
@@ -14,13 +14,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     redirectPath
 }) => {
     const { userRole, isLoading, roleChecked } = useRole();
+    const location = useLocation();
 
     if (!roleChecked || isLoading) {
         return <div>Loading...</div>;
+        // return <div>Loading...</div>;
     }
 
-    // Redirect New Users to Register Page
-    if (roleChecked && !userRole) {
+    // Redirect **New Users** to Register Page (Only if NOT already on `/register`)
+    if (!userRole && location.pathname !== '/register') {
+    // if (!userRole && location.pathname !== '/register') {
+    // if (roleChecked && !userRole && location.pathname !== '/register') {
         console.log("Redirecting new user to /register");
         return <Navigate to="/register" replace />;
     }
