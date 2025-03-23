@@ -3,28 +3,46 @@ import GeneralFund from "./GeneralFund";
 import SpecificFund from "./SpecificFund";
 import TotalFund from "./TotalFund";
 import Withdrawal from "./Withdrawal";
+import { mockCampaigns, mockOrganizations } from "../../../../../utils/mockData";
+
+// Mock current charity organization ID (Global Relief)
+const CURRENT_CHARITY_ORG_ID = 1;
 
 const FundManagement: React.FC = () => {
+  // Get the current organization
+  const currentOrganization = mockOrganizations.find(org => org.id === CURRENT_CHARITY_ORG_ID);
+  
+  // Get all campaigns for this organization
+  const organizationCampaigns = mockCampaigns.filter(
+    campaign => campaign.organizationId === CURRENT_CHARITY_ORG_ID
+  );
+  
+  // Calculate total contributions across all campaigns
+  const specificFundBalance = organizationCampaigns.reduce(
+    (total, campaign) => total + campaign.currentContributions, 
+    0
+  );
+  
   // Mock data
-  const generalFundBalance = 50000; // General fund balance
-  const specificFundBalance = 120000; // Total campaign-specific funds
-  const totalFundsRaised = generalFundBalance + specificFundBalance; // Total funds raised
-  const withdrawalRequests = [
-    {
-      id: 1,
-      name: "Clean Water Initiative",
-      goal: 10000,
-      currentContributions: 8000,
-      deadline: "2025-03-01",
-    },
-    {
-      id: 2,
-      name: "Education for All",
-      goal: 20000,
-      currentContributions: 15000,
-      deadline: "2025-02-15",
-    },
-  ]; // Overdue campaigns
+  const generalFundBalance = currentOrganization?.totalRaised || 50000; 
+  const totalFundsRaised = generalFundBalance; // Total funds raised
+  
+  // Find campaigns that are close to deadline but haven't reached their goal
+  const today = new Date();
+  const withdrawalRequests = organizationCampaigns
+    .filter(campaign => {
+      const deadline = new Date(campaign.deadline);
+      const timeLeft = deadline.getTime() - today.getTime();
+      const daysLeft = timeLeft / (1000 * 3600 * 24);
+      return daysLeft < 30 && campaign.currentContributions < campaign.goal;
+    })
+    .map(campaign => ({
+      id: campaign.id,
+      name: campaign.name,
+      goal: campaign.goal,
+      currentContributions: campaign.currentContributions,
+      deadline: campaign.deadline
+    }));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-6 gap-6">

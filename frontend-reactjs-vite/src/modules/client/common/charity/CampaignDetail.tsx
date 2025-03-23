@@ -1,117 +1,179 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers } from "react-icons/fa";
+import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding } from "react-icons/fa";
+import { useRole } from "../../../../contexts/RoleContext";
+import { mockCampaigns, mockDonorContributions, mockOrganizations } from "../../../../utils/mockData";
 
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userRole } = useRole();
+  const campaignId = parseInt(id || "0");
 
-  // In a real application, you would fetch the campaign details based on the ID
-  // For now, we'll use mock data
-  const campaign = {
-    id: parseInt(id || "0"),
-    name: `Campaign ${id}`,
-    description: `This is a detailed description of Campaign ${id}. It includes comprehensive information about the campaign's goals, objectives, and how the funds will be used. The campaign aims to make a significant impact in its target area and help those in need.`,
-    goal: 10000 * parseInt(id || "1"),
-    currentContributions: 5000 * parseInt(id || "1"),
-    deadline: "2025-08-31",
-    donors: 42,
-    createdBy: "Organization Name",
-    createdAt: "2023-01-15",
-  };
+  // Find the campaign from our centralized mock data
+  const campaign = mockCampaigns.find(c => c.id === campaignId);
+  
+  // If campaign not found, show error or redirect
+  if (!campaign) {
+    return (
+      <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">Campaign not found</h1>
+          <button 
+            onClick={() => navigate('/charity')} 
+            className="button flex items-center gap-2 px-6 py-2 mx-auto"
+          >
+            <FaArrowLeft />
+            Back to Campaigns
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Find the organization for this campaign
+  const organization = mockOrganizations.find(org => org.id === campaign.organizationId);
+
+  // Check if the donor has contributed to this campaign
+  const supportedCampaign = mockDonorContributions.supportedCampaigns.find(
+    (c) => c.id === campaignId
+  );
+  
+  // Get donor contribution details if they exist
+  const donorContribution = supportedCampaign ? {
+    totalAmount: supportedCampaign.donorContribution,
+    contributions: mockDonorContributions.contributionDetails[campaignId] || [],
+    percentageOfTotal: ((supportedCampaign.donorContribution / campaign.currentContributions) * 100).toFixed(1)
+  } : null;
 
   const progress = (campaign.currentContributions / campaign.goal) * 100;
   const timeLeft = Math.max(0, Math.floor((new Date(campaign.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
   return (
-    <div className="p-4 bg-[var(--background)] text-[var(--paragraph)] max-w-5xl mx-auto">
-      <button 
-        className="flex items-center gap-2 text-[var(--headline)] hover:text-[var(--highlight)] transition-colors mb-6"
-        onClick={() => navigate("/charity")}
-      >
-        <FaArrowLeft />
-        <span>Back to Campaigns</span>
-      </button>
-      
-      <div className="bg-[var(--main)] rounded-xl shadow-xl border border-[var(--stroke)] overflow-hidden">
-        {/* Header with decorative element */}
-        <div className="relative bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] h-32 flex items-end">
-          <div className="absolute inset-0 bg-opacity-30 bg-[var(--stroke)]"></div>
-          <h1 className="text-3xl font-bold text-white p-6 relative z-10">{campaign.name}</h1>
-        </div>
+    <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
+      <div className="max-w-4xl mx-auto">
+        {/* Back button */}
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-2 text-[var(--paragraph)] hover:text-[var(--headline)] mb-6"
+        >
+          <FaArrowLeft />
+          Back to Campaigns
+        </button>
         
-        <div className="p-6">
-          {/* Campaign stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-              <div className="flex items-center gap-2 mb-2">
-                <FaMoneyBillWave className="text-[var(--highlight)] text-xl" />
-                <h3 className="font-semibold">Funding</h3>
+        {/* Campaign Card */}
+        <div className="bg-[var(--main)] rounded-xl shadow-lg overflow-hidden mb-8">
+          {/* Campaign Header */}
+          <div className="bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] p-8 text-white">
+            <h1 className="text-3xl font-bold mb-2">{campaign.name}</h1>
+            <p className="text-white text-opacity-90 mb-4">{campaign.description}</p>
+            
+            {/* Progress bar */}
+            <div className="mb-4">
+              <div className="w-full bg-white bg-opacity-30 rounded-full h-4 mb-2">
+                <div 
+                  className="h-full rounded-full bg-white"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
-              <p className="text-2xl font-bold">${campaign.currentContributions}</p>
-              <p className="text-sm">of ${campaign.goal} goal</p>
+              <div className="flex justify-between items-center text-sm text-white">
+                <span>${campaign.currentContributions} raised</span>
+                <span>${campaign.goal} goal</span>
+              </div>
             </div>
             
-            <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-              <div className="flex items-center gap-2 mb-2">
-                <FaCalendarAlt className="text-[var(--tertiary)] text-xl" />
-                <h3 className="font-semibold">Time Left</h3>
+            {/* Campaign stats */}
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+                <div className="text-2xl font-bold">${campaign.currentContributions}</div>
+                <div className="text-sm">Raised</div>
               </div>
-              <p className="text-2xl font-bold">{timeLeft} days</p>
-              <p className="text-sm">Deadline: {campaign.deadline}</p>
-            </div>
-            
-            <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-              <div className="flex items-center gap-2 mb-2">
-                <FaUsers className="text-[var(--secondary)] text-xl" />
-                <h3 className="font-semibold">Supporters</h3>
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+                <div className="text-2xl font-bold">{timeLeft}</div>
+                <div className="text-sm">Days Left</div>
               </div>
-              <p className="text-2xl font-bold">{campaign.donors}</p>
-              <p className="text-sm">people have donated</p>
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+                <div className="text-2xl font-bold">42</div>
+                <div className="text-sm">Donors</div>
+              </div>
             </div>
-          </div>
-          
-          {/* Progress bar */}
-          <div className="mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-4 mb-2 overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-500 ease-out"
-                style={{ 
-                  width: `${progress}%`,
-                  background: `linear-gradient(90deg, var(--highlight) 0%, var(--secondary) 100%)`
-                }}
-              ></div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">{Math.round(progress)}% funded</span>
-              <span>{timeLeft > 0 ? `${timeLeft} days to go` : "Campaign ended"}</span>
-            </div>
-          </div>
-          
-          {/* Description */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4 text-[var(--headline)]">About this campaign</h2>
-            <p className="leading-relaxed">{campaign.description}</p>
           </div>
           
           {/* Campaign details */}
-          <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="font-semibold">Created by:</p>
-              <p>{campaign.createdBy}</p>
+          <div className="p-8">
+            {/* Organization info */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-2 text-[var(--headline)]">Organized by</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-[var(--highlight)] bg-opacity-20 rounded-full flex items-center justify-center">
+                  <FaBuilding className="text-[var(--highlight)]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[var(--headline)]">{organization?.name || "Organization"}</p>
+                  <p className="text-sm text-[var(--paragraph)]">Verified Organization</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold">Campaign started:</p>
-              <p>{campaign.createdAt}</p>
+            
+            {/* Campaign details */}
+            <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="font-semibold">Campaign deadline:</p>
+                <p>{campaign.deadline}</p>
+              </div>
+              <div>
+                <p className="font-semibold">Campaign started:</p>
+                <p>2023-01-15</p>
+              </div>
             </div>
-          </div>
-          
-          {/* Donation button */}
-          <div className="flex justify-center mt-8">
-            <button className="button flex items-center gap-2 px-8 py-3 text-lg">
-              <FaHandHoldingHeart />
-              Donate Now
-            </button>
+            
+            {/* Donor-specific contribution section - only show if donor has contributed */}
+            {userRole === 'donor' && donorContribution && (
+              <div className="mb-8 bg-[var(--background)] p-6 rounded-lg border border-[var(--stroke)]">
+                <h3 className="text-lg font-bold mb-4 text-[var(--headline)] flex items-center gap-2">
+                  <FaHistory />
+                  Your Contributions
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="text-2xl font-bold text-[var(--highlight)]">${donorContribution.totalAmount}</div>
+                    <div className="text-sm text-[var(--paragraph)]">Total Contributed</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="text-2xl font-bold text-[var(--secondary)]">{donorContribution.contributions.length}</div>
+                    <div className="text-sm text-[var(--paragraph)]">Donations Made</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="text-2xl font-bold text-[var(--tertiary)]">{donorContribution.percentageOfTotal}%</div>
+                    <div className="text-sm text-[var(--paragraph)]">Of Total Raised</div>
+                  </div>
+                </div>
+                
+                <div className="border-t border-[var(--stroke)] pt-4">
+                  <h4 className="font-semibold mb-2">Contribution History</h4>
+                  <div className="space-y-2">
+                    {donorContribution.contributions.map((contribution, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm p-2 bg-white rounded">
+                        <div className="flex items-center gap-2">
+                          <FaCalendarAlt className="text-[var(--highlight)]" />
+                          <span>{new Date(contribution.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="font-semibold">${contribution.amount}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Donation button */}
+            <div className="flex justify-center mt-8">
+              <button className="button flex items-center gap-2 px-8 py-3 text-lg">
+                <FaHandHoldingHeart />
+                Donate Now
+              </button>
+            </div>
           </div>
         </div>
       </div>

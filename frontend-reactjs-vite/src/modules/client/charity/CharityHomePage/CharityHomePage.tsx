@@ -2,19 +2,30 @@ import React, { useState } from "react";
 import CampaignCard from "../../../../components/cards/CampaignCard";
 import FundManagement from "./FundManagement/FundManagement";
 import VendorManagement from "../Vendor/VendorManagement";
-import Announcements from "../profile/components/Announcements"; // Import Announcements
+import Announcements from "../profile/components/Announcements";
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { mockCampaigns } from "../../../../mocks/campaignData";
+import { mockCampaigns, mockOrganizations } from "../../../../utils/mockData";
+
+// Mock current charity organization ID (Global Relief)
+const CURRENT_CHARITY_ORG_ID = 1;
 
 const CharityHomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  
+  // Get the current organization
+  const currentOrganization = mockOrganizations.find(org => org.id === CURRENT_CHARITY_ORG_ID);
+  
+  // Filter campaigns to only show those belonging to the current charity organization
+  const organizationCampaigns = mockCampaigns.filter(
+    campaign => campaign.organizationId === CURRENT_CHARITY_ORG_ID
+  );
 
-  // Filter campaigns based on the search term
-  const filteredCampaigns = mockCampaigns.filter(
+  // Further filter based on search term
+  const filteredCampaigns = organizationCampaigns.filter(
     (campaign) =>
-      campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -25,6 +36,16 @@ const CharityHomePage: React.FC = () => {
   return (
     <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Organization Header */}
+        <div className="lg:col-span-12 mb-4">
+          <h1 className="text-3xl font-bold text-[var(--headline)]">
+            {currentOrganization?.name || "Your Charity Organization"}
+          </h1>
+          <p className="text-[var(--paragraph)]">
+            {currentOrganization?.description || "Managing your charitable initiatives and campaigns"}
+          </p>
+        </div>
+        
         {/* Left Section: Fund Management */}
         <div className="lg:col-span-3 space-y-6">
           <FundManagement />
@@ -78,11 +99,11 @@ const CharityHomePage: React.FC = () => {
               {filteredCampaigns.map((campaign) => (
                 <CampaignCard
                   key={campaign.id}
-                  id={Number(campaign.id)}
-                  name={campaign.title}
+                  id={campaign.id}
+                  name={campaign.name}
                   description={campaign.description}
-                  goal={campaign.target_amount}
-                  currentContributions={campaign.current_amount}
+                  goal={campaign.goal}
+                  currentContributions={campaign.currentContributions}
                   deadline={campaign.deadline}
                 />
               ))}

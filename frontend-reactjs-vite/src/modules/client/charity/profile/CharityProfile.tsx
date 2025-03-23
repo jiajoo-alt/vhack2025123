@@ -5,7 +5,7 @@ import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
 import AddCampaignModal from "./components/AddCampaignModal";
 import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
-import { toast } from "react-toastify"; // Assuming you use react-toastify for notifications
+import { toast } from "react-toastify"; 
 
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);

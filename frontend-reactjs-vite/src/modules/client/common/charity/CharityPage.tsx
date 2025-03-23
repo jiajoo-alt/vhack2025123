@@ -1,43 +1,24 @@
 import React, { useState } from "react";
 import CampaignCard from "../../../../components/cards/CampaignCard";
-import { FaHandHoldingHeart, FaBuilding, FaSearch } from "react-icons/fa";
+import { FaHandHoldingHeart, FaBuilding, FaSearch, FaHistory } from "react-icons/fa";
 import OrganizationCard from "../../../../components/cards/OrganizationCard";
 import { useNavigate } from "react-router-dom";
-
-
+import { useRole } from "../../../../contexts/RoleContext";
+import DonorSupportedCampaigns from "./DonorSupportedCampaigns";
+import { mockCampaigns, mockOrganizations } from "../../../../utils/mockData";
 
 const CharityPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'organizations'>('campaigns');
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'organizations' | 'supported'>('campaigns');
   const [searchTerm, setSearchTerm] = useState('');
+  const { userRole } = useRole();
+  const navigate = useNavigate();
 
-  const campaigns = [
-    { id: 1, name: "Clean Water Initiative", description: "Providing clean water to communities in need through sustainable infrastructure projects.", goal: 10000, currentContributions: 5000, deadline: "2025-08-31" },
-    { id: 2, name: "Education for All", description: "Supporting education programs for underprivileged children around the world.", goal: 20000, currentContributions: 15000, deadline: "2025-03-31" },
-    { id: 3, name: "Wildlife Conservation", description: "Protecting endangered species and their habitats through conservation efforts.", goal: 30000, currentContributions: 25000, deadline: "2025-06-27" },
-    { id: 4, name: "Hunger Relief", description: "Providing meals and food security to communities facing food insecurity.", goal: 40000, currentContributions: 35000, deadline: "2025-07-27" },
-    { id: 5, name: "Medical Aid", description: "Delivering essential medical supplies and healthcare to underserved regions.", goal: 50000, currentContributions: 45000, deadline: "2025-08-27" },
-    { id: 6, name: "Disaster Relief", description: "Providing immediate assistance to communities affected by natural disasters.", goal: 60000, currentContributions: 55000, deadline: "2025-09-27" },
-    { id: 7, name: "Renewable Energy", description: "Implementing renewable energy solutions in developing communities.", goal: 70000, currentContributions: 65000, deadline: "2025-10-27" },
-    { id: 8, name: "Women Empowerment", description: "Supporting programs that empower women through education and economic opportunities.", goal: 80000, currentContributions: 75000, deadline: "2025-11-27" },
-    { id: 9, name: "Mental Health Support", description: "Providing mental health resources and support to those in need.", goal: 90000, currentContributions: 85000, deadline: "2025-12-27" },
-    { id: 10, name: "Ocean Cleanup", description: "Removing plastic and pollution from oceans to protect marine life.", goal: 100000, currentContributions: 95000, deadline: "2026-01-27" },
-  ];
-
-  const organizations = [
-    { id: 1, name: "Global Relief", description: "A worldwide organization dedicated to providing humanitarian aid in crisis situations.", logo: "", campaigns: 5, totalRaised: 250000 },
-    { id: 2, name: "EduCare", description: "Focused on providing quality education to underprivileged children around the world.", logo: "", campaigns: 3, totalRaised: 180000 },
-    { id: 3, name: "Nature First", description: "Committed to protecting wildlife and natural habitats through conservation efforts.", logo: "", campaigns: 4, totalRaised: 320000 },
-    { id: 4, name: "Health Alliance", description: "Delivering essential healthcare services to communities with limited access to medical care.", logo: "", campaigns: 6, totalRaised: 420000 },
-    { id: 5, name: "Food for All", description: "Working to eliminate hunger and food insecurity in vulnerable communities.", logo: "", campaigns: 2, totalRaised: 150000 },
-    { id: 6, name: "Clean Earth Initiative", description: "Focused on environmental conservation and sustainable practices to protect our planet.", logo: "", campaigns: 4, totalRaised: 280000 },
-  ];
-
-  const filteredCampaigns = campaigns.filter(campaign => 
+  const filteredCampaigns = mockCampaigns.filter(campaign => 
     campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredOrganizations = organizations.filter(org => 
+  const filteredOrganizations = mockOrganizations.filter(org => 
     org.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     org.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -91,6 +72,20 @@ const CharityPage: React.FC = () => {
           <FaBuilding />
           Organizations
         </button>
+        
+        {userRole === 'donor' && (
+          <button
+            className={`px-6 py-3 font-semibold flex items-center gap-2 transition-colors ${
+              activeTab === 'supported'
+                ? 'text-[var(--highlight)] border-b-2 border-[var(--highlight)]'
+                : 'text-[var(--paragraph)] hover:text-[var(--headline)]'
+            }`}
+            onClick={() => setActiveTab('supported')}
+          >
+            <FaHistory />
+            My Supported
+          </button>
+        )}
       </div>
       
       {/* Content based on active tab */}
@@ -117,7 +112,7 @@ const CharityPage: React.FC = () => {
             </div>
           )}
         </>
-      ) : (
+      ) : activeTab === 'organizations' ? (
         <>
           <h2 className="text-2xl font-bold mb-4 text-[var(--headline)]">Charity Organizations</h2>
           {filteredOrganizations.length > 0 ? (
@@ -139,6 +134,11 @@ const CharityPage: React.FC = () => {
               <p className="text-lg">No organizations found matching your search.</p>
             </div>
           )}
+        </>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold mb-4 text-[var(--headline)]">My Supported Campaigns</h2>
+          <DonorSupportedCampaigns />
         </>
       )}
     </div>
