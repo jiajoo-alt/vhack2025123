@@ -1,9 +1,100 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding } from "react-icons/fa";
+import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding, FaEdit, FaTrash, FaComments, FaClock, FaThumbsUp, FaPlus, FaMapMarkerAlt, FaShare, FaTrophy, FaExchangeAlt, FaTimes } from "react-icons/fa";
 import { useRole } from "../../../../contexts/RoleContext";
 import { mockCampaigns, mockDonorContributions, mockOrganizations } from "../../../../utils/mockData";
 import DonationModal from "../../../../components/modals/DonationModal";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+// Import the community components
+import PostFeed from "../../common/community/components/PostFeed";
+import DonationLeaderboard from "../../common/community/components/DonationLeaderboard";
+import TransactionTimeline from "../../common/community/components/TransactionTimeline";
+
+// Floating Modal Component for Full Leaderboard
+const LeaderboardModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  campaignId: number;
+  campaignName: string;
+}> = ({ isOpen, onClose, campaignId, campaignName }) => {
+  if (!isOpen) return null;
+  
+  // Handle keyboard events (Escape key)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    // Add event listener when the modal is open
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Focus trap (optional)
+    const originalFocus = document.activeElement;
+    
+    // Clean up event listener when modal is closed
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Return focus to original element (if it can receive focus)
+      if (originalFocus && 'focus' in originalFocus && typeof (originalFocus as any).focus === 'function') {
+        (originalFocus as HTMLElement).focus();
+      }
+    };
+  }, [onClose]);
+  
+  // Close when clicking outside the modal
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+  
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="leaderboard-title"
+    >
+      <motion.div 
+        className="bg-[var(--main)] rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-xl"
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        <div className="p-6 border-b border-[var(--stroke)] flex justify-between items-center sticky top-0 bg-[var(--main)] z-10">
+          <div>
+            <h2 id="leaderboard-title" className="text-2xl font-bold text-[var(--headline)] flex items-center gap-2">
+              <FaTrophy className="text-[var(--highlight)]" />
+              Top Donors
+            </h2>
+            <p className="text-[var(--paragraph)] mt-1">
+              {campaignName}
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-[var(--background)] transition-colors text-[var(--paragraph)] hover:text-[var(--headline)]"
+            aria-label="Close"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <div className="flex-grow overflow-y-auto p-6">
+          <DonationLeaderboard 
+            communityId={campaignId} 
+            communityType="campaign" 
+            simplified={false}
+          />
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +102,11 @@ const CampaignDetail: React.FC = () => {
   const { userRole } = useRole();
   const campaignId = parseInt(id || "0");
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+  // Use a single tab for the community section (feed only)
+  // Add state for main content tabs
+  const [activeMainTab, setActiveMainTab] = useState<'transactions' | 'community'>('transactions');
+  // Add state for showing full leaderboard modal
+  const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
 
   // Find the campaign from our centralized mock data
   const campaign = mockCampaigns.find(c => c.id === campaignId);
@@ -50,6 +146,9 @@ const CampaignDetail: React.FC = () => {
 
   const progress = (campaign.currentContributions / campaign.goal) * 100;
   const timeLeft = Math.max(0, Math.floor((new Date(campaign.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  
+  // Add this line to define isCampaignActive
+  const isCampaignActive = timeLeft > 0 && campaign.currentContributions < campaign.goal;
 
   const handleDonationComplete = (amount: number, donationPolicy?: string) => {
     // In a real app, you would update the campaign data after a successful donation
@@ -58,9 +157,22 @@ const CampaignDetail: React.FC = () => {
     // You could also show a success message or redirect
   };
 
+  // Handle view full leaderboard
+  const handleViewFullLeaderboard = () => {
+    // Use the modal instead of navigation
+    setShowFullLeaderboard(true);
+  };
+
+  // Handle organization click to navigate to org page
+  const handleOrganizationClick = () => {
+    if (organization) {
+      navigate(`/organization/${organization.id}`);
+    }
+  };
+
   return (
     <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Back button */}
         <button 
           onClick={() => navigate(-1)} 
@@ -70,122 +182,381 @@ const CampaignDetail: React.FC = () => {
           Back to Campaigns
         </button>
         
-        {/* Campaign Card */}
-        <div className="bg-[var(--main)] rounded-xl shadow-lg overflow-hidden mb-8">
-          {/* Campaign Header */}
-          <div className="bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] p-8 text-white">
-            <h1 className="text-3xl font-bold mb-2">{campaign.name}</h1>
-            <p className="text-white text-opacity-90 mb-4">{campaign.description}</p>
-            
-            {/* Progress bar */}
-            <div className="mb-4">
-              <div className="w-full bg-white bg-opacity-30 rounded-full h-4 mb-2">
-                <div 
-                  className="h-full rounded-full bg-white"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between items-center text-sm text-white">
-                <span>${campaign.currentContributions} raised</span>
-                <span>${campaign.goal} goal</span>
-              </div>
+        {/* Main campaign header - full width */}
+        <div className="bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] p-8 text-white rounded-t-xl shadow-lg mb-6">
+          <h1 className="text-3xl font-bold mb-2">{campaign.name}</h1>
+          <p className="text-white text-opacity-90 mb-4">{campaign.description}</p>
+          
+          {/* Progress bar */}
+          <div className="mb-4">
+            <div className="w-full bg-white bg-opacity-30 rounded-full h-4 mb-2">
+              <div 
+                className="h-full rounded-full bg-white"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
-            
-            {/* Campaign stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
-                <div className="text-2xl font-bold">${campaign.currentContributions}</div>
-                <div className="text-sm">Raised</div>
-              </div>
-              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
-                <div className="text-2xl font-bold">{timeLeft}</div>
-                <div className="text-sm">Days Left</div>
-              </div>
-              <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
-                <div className="text-2xl font-bold">42</div>
-                <div className="text-sm">Donors</div>
-              </div>
+            <div className="flex justify-between items-center text-sm text-white">
+              <span>${campaign.currentContributions} raised</span>
+              <span>${campaign.goal} goal</span>
             </div>
           </div>
           
-          {/* Campaign details */}
-          <div className="p-8">
-            {/* Organization info */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-2 text-[var(--headline)]">Organized by</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[var(--highlight)] bg-opacity-20 rounded-full flex items-center justify-center">
-                  <FaBuilding className="text-[var(--highlight)]" />
+          {/* Campaign stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+              <div className="text-2xl font-bold">${campaign.currentContributions}</div>
+              <div className="text-sm">Raised</div>
+            </div>
+            <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+              <div className="text-2xl font-bold">{timeLeft}</div>
+              <div className="text-sm">Days Left</div>
+            </div>
+            <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
+              <div className="text-2xl font-bold">42</div>
+              <div className="text-sm">Donors</div>
+            </div>
+          </div>
+          
+          {/* Donate button for donor role */}
+          {userRole === 'donor' && (
+            <div className="mt-6">
+              <button 
+                className="px-6 py-3 rounded-lg bg-white text-[var(--highlight)] hover:bg-opacity-90 flex items-center gap-2 transition-colors font-bold"
+                onClick={() => setIsDonationModalOpen(true)}
+                disabled={!isCampaignActive}
+              >
+                <FaHandHoldingHeart />
+                {isCampaignActive ? 'Donate Now' : 'Campaign Ended'}
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Two-column layout for main content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column - Main campaign information */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Organization info - now clickable */}
+            <div 
+              className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-[var(--highlight)] group"
+              onClick={handleOrganizationClick}
+              role="button"
+              aria-label={`View ${organization?.name || "Organization"} details`}
+            >
+              <div className="p-4 border-b border-[var(--stroke)] bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] bg-opacity-10 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-[var(--headline)]">Organized by</h3>
+                <span className="text-sm text-[var(--highlight)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1">
+                  View Organization 
+                  <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+              <div className="p-6 group-hover:bg-[var(--background)] transition-colors duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-[var(--highlight)] bg-opacity-20 rounded-full flex items-center justify-center shadow-md group-hover:bg-opacity-30 transition-all duration-300">
+                    <FaBuilding className="text-[var(--highlight)] text-2xl" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-xl text-[var(--headline)] group-hover:text-[var(--highlight)] transition-colors duration-300">{organization?.name || "Organization"}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="bg-[var(--highlight)] bg-opacity-10 text-white text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                        </svg>
+                        Verified Organization
+                      </span>
+                      <span className="text-[var(--paragraph)] text-sm">Since 2020</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-[var(--headline)]">{organization?.name || "Organization"}</p>
-                  <p className="text-sm text-[var(--paragraph)]">Verified Organization</p>
+                <div className="mt-4 border-t border-[var(--stroke)] pt-4 text-sm text-[var(--paragraph)]">
+                  <p className="line-clamp-2">
+                    {organization?.description || "This organization is dedicated to making a positive impact through various campaigns and initiatives."}
+                  </p>
                 </div>
               </div>
             </div>
             
-            {/* Campaign details */}
-            <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-semibold">Campaign deadline:</p>
-                <p>{campaign.deadline}</p>
+            {/* Tabbed section for Transactions and Community - only show for charity users or donors who have contributed */}
+            {(userRole === 'charity' || (userRole === 'donor' && donorContribution)) ? (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+                <div className="border-b border-[var(--stroke)]">
+                  <div className="flex">
+                    <button
+                      onClick={() => setActiveMainTab('transactions')}
+                      className={`px-6 py-4 flex items-center gap-2 text-sm font-medium ${
+                        activeMainTab === 'transactions' 
+                        ? 'bg-[var(--highlight)] text-white' 
+                        : 'hover:bg-[var(--background)]'
+                      }`}
+                    >
+                      <FaExchangeAlt />
+                      Transactions
+                    </button>
+                    <button
+                      onClick={() => setActiveMainTab('community')}
+                      className={`px-6 py-4 flex items-center gap-2 text-sm font-medium ${
+                        activeMainTab === 'community' 
+                        ? 'bg-[var(--highlight)] text-white' 
+                        : 'hover:bg-[var(--background)]'
+                      }`}
+                    >
+                      <FaUsers />
+                      Community
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  {activeMainTab === 'transactions' && (
+                    <>
+                      <h2 className="text-xl font-bold text-[var(--headline)] mb-2">Campaign Transactions</h2>
+                      <p className="text-[var(--paragraph)] text-sm mb-4">
+                        Track how funds are being used in this campaign
+                      </p>
+                      <TransactionTimeline communityId={campaignId} communityType="campaign" />
+                    </>
+                  )}
+                  
+                  {activeMainTab === 'community' && (
+                    <>
+                      <h2 className="text-xl font-bold text-[var(--headline)] mb-2">Campaign Community</h2>
+                      <p className="text-[var(--paragraph)] text-sm mb-4">
+                        Connect with other supporters and stay updated
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-[var(--paragraph)] mb-6">
+                        <span className="flex items-center gap-1">
+                          <FaUsers className="text-[var(--tertiary)]" />
+                          {42} members
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FaComments className="text-[var(--secondary)]" />
+                          {24} posts
+                        </span>
+                      </div>
+                      <PostFeed communityId={campaignId} communityType="campaign" />
+                    </>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">Campaign started:</p>
-                <p>2023-01-15</p>
+            ) : (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden p-6 text-center">
+                <div className="my-8">
+                  <div className="flex justify-center mb-4">
+                    <div className="w-16 h-16 rounded-full bg-[var(--highlight)] bg-opacity-10 flex items-center justify-center">
+                      <FaHandHoldingHeart className="text-[var(--highlight)] text-2xl" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--headline)] mb-3">Support this campaign</h3>
+                  <p className="text-[var(--paragraph)] mb-6 max-w-md mx-auto">
+                    Donate to this campaign to unlock access to campaign transactions, 
+                    community discussions, and the donor leaderboard.
+                  </p>
+                  {isCampaignActive && (
+                    <button 
+                      className="px-6 py-3 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors mx-auto"
+                      onClick={() => setIsDonationModalOpen(true)}
+                    >
+                      <FaHandHoldingHeart />
+                      Donate Now
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Right column - Supplementary information */}
+          <div className="space-y-6">
+            {/* Campaign details */}
+            <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+              <div className="p-4 border-b border-[var(--stroke)] bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] bg-opacity-10">
+                <h3 className="text-lg font-bold text-[var(--headline)]">Campaign Timeline</h3>
+              </div>
+              <div className="p-6">
+                <div className="relative">
+                  {/* Timeline line - Fix: Make it extend through all content including the last item */}
+                  <div className="absolute h-full w-0.5 bg-[var(--stroke)] left-6 top-0 bottom-0"></div>
+                  
+                  {/* Start date */}
+                  <div className="flex mb-8 relative">
+                    <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-[var(--secondary)] bg-opacity-10 border-4 border-[var(--main)] shadow">
+                      <FaCalendarAlt className="text-[var(--secondary)]" />
+                    </div>
+                    <div className="flex-grow ml-4">
+                      <div className="font-bold text-[var(--headline)] flex items-center gap-2">
+                        Campaign Started
+                        <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-[var(--secondary)] bg-opacity-10 text-black">
+                          Active
+                        </span>
+                      </div>
+                      <div className="text-[var(--paragraph)] mt-1">January 15, 2023</div>
+                      <div className="text-xs text-[var(--paragraph)] mt-1 italic">
+                        {timeLeft + 30} days ago
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Current progress */}
+                  <div className="flex mb-8 relative">
+                    <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-[var(--highlight)] bg-opacity-10 border-4 border-[var(--main)] shadow">
+                      <FaMoneyBillWave className="text-[var(--highlight)]" />
+                    </div>
+                    <div className="flex-grow ml-4">
+                      <div className="font-bold text-[var(--headline)]">Current Progress</div>
+                      <div className="text-[var(--paragraph)] mt-1">${campaign.currentContributions} raised of ${campaign.goal} goal</div>
+                      <div className="w-full bg-[var(--stroke)] rounded-full h-2 mt-2">
+                        <div 
+                          className="h-full rounded-full bg-[var(--highlight)]"
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-[var(--paragraph)] mt-1">
+                        {progress.toFixed(1)}% Complete
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* End date */}
+                  <div className="flex relative mb-8">
+                    <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-[var(--tertiary)] bg-opacity-10 border-4 border-[var(--main)] shadow">
+                      <FaClock className="text-[var(--tertiary)]" />
+                    </div>
+                    <div className="flex-grow ml-4">
+                      <div className="font-bold text-[var(--headline)]">Campaign Deadline</div>
+                      <div className="text-[var(--paragraph)] mt-1">{campaign.deadline}</div>
+                      <div className="text-xs mt-2 flex items-center gap-1">
+                        <span className={`px-2 py-0.5 rounded-full font-medium ${timeLeft > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {timeLeft > 0 ? `${timeLeft} days left` : 'Campaign ended'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Location - Fix: Remove the border-t and adjust spacing */}
+                  <div className="flex relative">
+                    <div className="z-10 flex items-center justify-center w-12 h-12 rounded-full bg-[var(--highlight)] bg-opacity-10 border-4 border-[var(--main)] shadow">
+                      <FaMapMarkerAlt className="text-[var(--highlight)]" />
+                    </div>
+                    <div className="flex-grow ml-4">
+                      <div className="font-bold text-[var(--headline)]">Campaign Location</div>
+                      <div className="text-[var(--paragraph)] mt-1">Worldwide</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+            
+            {/* Donor Leaderboard - only show for charity users or donors who have contributed */}
+            {(userRole === 'charity' || (userRole === 'donor' && donorContribution)) ? (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+                <div className="p-4">
+                  <h2 className="text-xl font-bold text-[var(--headline)] flex items-center gap-2">
+                    <FaTrophy className="text-[var(--highlight)]" />
+                    Top Donors
+                  </h2>
+                  <p className="text-[var(--paragraph)] text-sm mt-1">
+                    Recognizing our most generous supporters
+                  </p>
+                </div>
+                
+                <div className="p-0">
+                  <DonationLeaderboard 
+                    communityId={campaignId} 
+                    communityType="campaign" 
+                    simplified={true}
+                    onViewFullLeaderboard={handleViewFullLeaderboard}
+                    maxItems={5}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FaTrophy className="text-[var(--highlight)]" />
+                  <h3 className="text-lg font-bold text-[var(--headline)]">Top Donors</h3>
+                </div>
+                <div className="border-t border-[var(--stroke)] pt-4 mt-2 text-center">
+                  <p className="text-[var(--paragraph)] mb-4">
+                    Donate to this campaign to view the leaderboard and track where your donation ranks!
+                  </p>
+                  {isCampaignActive && (
+                    <button 
+                      className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 text-sm transition-colors"
+                      onClick={() => setIsDonationModalOpen(true)}
+                    >
+                      Become a Donor
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             
             {/* Donor-specific contribution section - only show if donor has contributed */}
             {userRole === 'donor' && donorContribution && (
-              <div className="mb-8 bg-[var(--background)] p-6 rounded-lg border border-[var(--stroke)]">
-                <h3 className="text-lg font-bold mb-4 text-[var(--headline)] flex items-center gap-2">
-                  <FaHistory />
-                  Your Contributions
-                </h3>
+              <div className="bg-[var(--main)] p-6 rounded-lg border border-[var(--stroke)] shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-[var(--highlight)] bg-opacity-10 flex items-center justify-center">
+                    <FaHistory className="text-[var(--highlight)]" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--headline)]">Your Contributions</h3>
+                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="text-2xl font-bold text-[var(--highlight)]">${donorContribution.totalAmount}</div>
-                    <div className="text-sm text-[var(--paragraph)]">Total Contributed</div>
+                {/* Stats in a visually appealing grid */}
+                <div className="grid grid-cols-1 gap-4 mb-6">
+                  <div className="relative overflow-hidden rounded-lg border border-[var(--stroke)] bg-gradient-to-r from-[var(--highlight)] to-[var(--highlight)] bg-opacity-5 p-4">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-[var(--highlight)] opacity-5 rounded-bl-full"></div>
+                    <span className="text-3xl font-bold text-white">${donorContribution.totalAmount}</span>
+                    <p className="text-sm text-white font-medium mt-1">Total Contributed</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="text-2xl font-bold text-[var(--secondary)]">{donorContribution.contributions.length}</div>
-                    <div className="text-sm text-[var(--paragraph)]">Donations Made</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="text-2xl font-bold text-[var(--tertiary)]">{donorContribution.percentageOfTotal}%</div>
-                    <div className="text-sm text-[var(--paragraph)]">Of Total Raised</div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="relative overflow-hidden rounded-lg border border-[var(--stroke)] bg-gradient-to-r from-[var(--secondary)] to-[var(--secondary)] bg-opacity-5 p-4">
+                      <div className="absolute top-0 right-0 w-12 h-12 bg-[var(--secondary)] opacity-5 rounded-bl-full"></div>
+                      <span className="text-2xl font-bold text-white">{donorContribution.contributions.length}</span>
+                      <p className="text-sm text-white font-medium mt-1">Donations Made</p>
+                    </div>
+                    
+                    <div className="relative overflow-hidden rounded-lg border border-[var(--stroke)] bg-gradient-to-r from-[var(--tertiary)] to-[var(--tertiary)] bg-opacity-5 p-4">
+                      <div className="absolute top-0 right-0 w-12 h-12 bg-[var(--tertiary)] opacity-5 rounded-bl-full"></div>
+                      <span className="text-2xl font-bold text-white">{donorContribution.percentageOfTotal}%</span>
+                      <p className="text-sm text-white font-medium mt-1">Of Total Raised</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="border-t border-[var(--stroke)] pt-4">
-                  <h4 className="font-semibold mb-2">Contribution History</h4>
-                  <div className="space-y-2">
+                {/* Contribution History with improved styling */}
+                <div className="border-t border-[var(--stroke)] pt-5 mt-2">
+                  <h4 className="font-semibold mb-4 flex items-center gap-2 text-[var(--headline)]">
+                    <FaCalendarAlt className="text-[var(--highlight)] text-sm" />
+                    Contribution History
+                  </h4>
+                  
+                  <div className="space-y-3">
                     {donorContribution.contributions.map((contribution, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm p-2 bg-white rounded">
-                        <div className="flex items-center gap-2">
-                          <FaCalendarAlt className="text-[var(--highlight)]" />
-                          <span>{new Date(contribution.date).toLocaleDateString()}</span>
+                      <div 
+                        key={index} 
+                        className="flex justify-between items-center p-3 border border-[var(--stroke)] rounded-lg hover:border-[var(--highlight)] hover:shadow-sm transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-[var(--highlight)] bg-opacity-10 flex items-center justify-center text-[var(--highlight)]">
+                            <FaCalendarAlt />
+                          </div>
+                          <div>
+                            <span className="text-[var(--headline)] font-medium">{new Date(contribution.date).toLocaleDateString()}</span>
+                            <p className="text-xs text-[var(--paragraph)]">
+                              {new Date(contribution.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                          </div>
                         </div>
-                        <div className="font-semibold">${contribution.amount}</div>
+                        <div className="font-bold text-[var(--highlight)]">${contribution.amount}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-            
-            {/* Donation button */}
-            <div className="flex justify-center mt-8">
-              <button 
-                className="button flex items-center gap-2 px-8 py-3 text-lg"
-                onClick={() => setIsDonationModalOpen(true)}
-              >
-                <FaHandHoldingHeart />
-                Donate Now
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -199,6 +570,14 @@ const CampaignDetail: React.FC = () => {
         organizationId={campaign.organizationId}
         organizationName={organization?.name}
         onDonationComplete={handleDonationComplete}
+      />
+      
+      {/* Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={showFullLeaderboard}
+        onClose={() => setShowFullLeaderboard(false)}
+        campaignId={campaignId}
+        campaignName={campaign.name}
       />
     </div>
   );

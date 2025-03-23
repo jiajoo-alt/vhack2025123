@@ -21,8 +21,11 @@ import CommunityDetail from "./modules/client/common/community/CommunityDetail";
 import DonorProfile from "./modules/client/donor/profile/DonorProfile";
 import CharityProfile from "./modules/client/charity/profile/CharityProfile";
 import CharityHomePage from "./modules/client/charity/CharityHomePage/CharityHomePage";
+import CharityManagementPage from "./modules/client/charity/management/CharityManagementPage";
 import CreateCampaign from "./components/form/CreateCampaign";
 import VendorPage from "./modules/client/charity/Vendor/VendorPage";
+import CharityCommunityAdmin from "./modules/client/charity/community/CharityCommunityAdmin";
+import GeneralFundCommunities from "./modules/client/charity/community/GeneralFundCommunities";
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -100,6 +103,9 @@ export function App() {
 							<Route path="/Vhack-2025/charity/profile" element={<CharityProfile />} />
 							<Route path="/create-campaign" element={<CreateCampaign />} />
 							<Route path="/Vhack-2025/charity/vendor-page" element={<VendorPage />} />
+							<Route path="/charity-management" element={<CharityManagementPage />} />
+							<Route path="/charity/community/:type/:id" element={<CharityCommunityAdmin />} />
+							<Route path="/charity/general-communities" element={<GeneralFundCommunities />} />
 						</Route>
 
 						{/* Vendor-Specific Routes */}
