@@ -2,15 +2,20 @@ import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaEye, FaChartLine, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { mockCampaigns, Campaign } from "../../../../../mocks/campaignData";
+import { mockCampaigns, Campaign } from "../../../../../utils/mockData";
+
+// Mock current charity organization ID (Global Relief)
+const CURRENT_CHARITY_ORG_ID = 1;
 
 const CharityCampaigns: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Use the shared mock campaigns data
-  const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
+  // Filter campaigns to only show those belonging to the current charity organization
+  const [campaigns, setCampaigns] = useState<Campaign[]>(
+    mockCampaigns.filter(campaign => campaign.organizationId === CURRENT_CHARITY_ORG_ID)
+  );
   
   // Simulate loading
   useEffect(() => {
@@ -21,7 +26,7 @@ const CharityCampaigns: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this campaign?")) {
       try {
         // Remove from local state instead of calling service
@@ -34,11 +39,11 @@ const CharityCampaigns: React.FC = () => {
     }
   };
 
-  const handleView = (id: string) => {
+  const handleView = (id: number) => {
     navigate(`/charity/${id}`);
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id: number) => {
     navigate(`/charity/edit/${id}`);
   };
 
@@ -72,25 +77,25 @@ const CharityCampaigns: React.FC = () => {
             {campaigns.map((campaign) => (
               <tr key={campaign.id} className="border-b border-[var(--stroke)] hover:bg-[var(--background)] transition-colors">
                 <td className="p-4">
-                  <div className="font-medium text-[var(--headline)]">{campaign.title}</div>
+                  <div className="font-medium text-[var(--headline)]">{campaign.name}</div>
                   <div className="text-sm text-[var(--paragraph)] truncate max-w-xs">{campaign.description}</div>
                 </td>
                 <td className="p-4">
                   <div className="flex items-center gap-1">
                     <FaMoneyBillWave className="text-green-500" />
-                    <span>${campaign.target_amount.toLocaleString()}</span>
+                    <span>${campaign.goal.toLocaleString()}</span>
                   </div>
                 </td>
                 <td className="p-4">
                   <div className="w-full bg-[var(--background)] rounded-full h-2.5 mb-1">
                     <div 
                       className="bg-[var(--highlight)] h-2.5 rounded-full" 
-                      style={{ width: `${Math.min(100, (campaign.current_amount / campaign.target_amount) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (campaign.currentContributions / campaign.goal) * 100)}%` }}
                     ></div>
                   </div>
                   <div className="text-xs text-[var(--paragraph)]">
-                    ${campaign.current_amount.toLocaleString()} (
-                    {Math.round((campaign.current_amount / campaign.target_amount) * 100)}%)
+                    ${campaign.currentContributions.toLocaleString()} (
+                    {Math.round((campaign.currentContributions / campaign.goal) * 100)}%)
                   </div>
                 </td>
                 <td className="p-4">
@@ -101,35 +106,44 @@ const CharityCampaigns: React.FC = () => {
                 </td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded-full text-xs ${
-                    campaign.status === 'active' ? 'bg-green-100 text-green-800' : 
-                    campaign.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                    campaign.currentContributions >= campaign.goal ? 'bg-blue-100 text-blue-800' : 
+                    new Date(campaign.deadline) > new Date() ? 'bg-green-100 text-green-800' : 
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                    {campaign.currentContributions >= campaign.goal ? 'Completed' : 
+                     new Date(campaign.deadline) > new Date() ? 'Active' : 
+                     'Expired'}
                   </span>
                 </td>
                 <td className="p-4">
-                  <div className="flex items-center gap-2">
-                    <button 
+                  <div className="flex space-x-2">
+                    <button
                       onClick={() => handleView(campaign.id)}
-                      className="p-2 text-[var(--paragraph)] hover:text-[var(--headline)] transition-colors"
+                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
                       title="View Campaign"
                     >
                       <FaEye />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleEdit(campaign.id)}
-                      className="p-2 text-[var(--paragraph)] hover:text-[var(--headline)] transition-colors"
+                      className="p-2 text-yellow-500 hover:bg-yellow-50 rounded-full transition-colors"
                       title="Edit Campaign"
                     >
                       <FaEdit />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDelete(campaign.id)}
-                      className="p-2 text-[var(--paragraph)] hover:text-red-500 transition-colors"
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                       title="Delete Campaign"
                     >
                       <FaTrash />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/charity/analytics/${campaign.id}`)}
+                      className="p-2 text-purple-500 hover:bg-purple-50 rounded-full transition-colors"
+                      title="Campaign Analytics"
+                    >
+                      <FaChartLine />
                     </button>
                   </div>
                 </td>
