@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
+import { FaCalendarAlt, FaMoneyBillWave, FaTag } from "react-icons/fa";
 
 interface CampaignCardProps {
   id: number;
@@ -9,9 +9,10 @@ interface CampaignCardProps {
   goal: number;
   currentContributions: number;
   deadline: string;
+  category?: string;
 }
 
-const CampaignCard: React.FC<CampaignCardProps> = ({ id, name, description, goal, currentContributions, deadline }) => {
+const CampaignCard: React.FC<CampaignCardProps> = ({ id, name, description, goal, currentContributions, deadline, category }) => {
   const navigate = useNavigate();
   const progress = (currentContributions / goal) * 100;
   const timeLeft = Math.max(0, Math.floor((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -32,6 +33,15 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ id, name, description, goal
       <h2 className="text-xl font-bold text-[var(--headline)] mb-3 pr-16">{name}</h2>
       <p className="mb-5 text-[var(--paragraph)] line-clamp-2">{description}</p>
       
+      {category && (
+        <div className="mb-3 flex items-center gap-1 text-sm">
+          <FaTag className="text-[var(--highlight)]" />
+          <span className="px-2 py-1 bg-[var(--highlight)] bg-opacity-10 rounded-full text-xs font-semibold text-[var(--headline)]">
+            {category}
+          </span>
+        </div>
+      )}
+      
       <div className="mb-4">
         <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
           <div 
@@ -51,7 +61,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ id, name, description, goal
         </div>
       </div>
       
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+      <div className="flex justify-between items-center">
         <div className="flex items-center gap-1 text-sm text-[var(--paragraph)]">
           <FaCalendarAlt className="text-[var(--tertiary)]" />
           <span>{timeLeft} days left</span>

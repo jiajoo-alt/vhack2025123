@@ -14,7 +14,6 @@ import ConnectWalletPage from "./modules/authentication/ConnectWallet";
 import LoginPage from "./modules/authentication/Login";
 import HomePage from "./modules/client/common/Dashboard";
 
-
 import ThemeToggle from "./components/Button/ThemeToggleButton";
 import CharityPage from "./modules/client/common/charity/CharityPage";
 import CampaignDetail from "./modules/client/common/charity/CampaignDetail";
@@ -23,38 +22,44 @@ import CommunityPage from "./modules/client/common/community/CommunityPage";
 import CommunityDetail from "./modules/client/common/community/CommunityDetail";
 import DonorProfile from "./modules/client/donor/profile/DonorProfile";
 import CharityProfile from "./modules/client/charity/profile/CharityProfile";
+import CharityHomePage from "./modules/client/charity/CharityHomePage/CharityHomePage";
+import CharityManagementPage from "./modules/client/charity/management/CharityManagementPage";
+import CreateCampaign from "./components/form/CreateCampaign";
+import VendorPage from "./modules/client/charity/Vendor/VendorPage";
+import CharityCommunityAdmin from "./modules/client/charity/community/CharityCommunityAdmin";
+import GeneralFundCommunities from "./modules/client/charity/community/GeneralFundCommunities";
 
 export function App() {
 	const activeAccount = useActiveAccount();
 	console.log("address", activeAccount?.address);
-    const { userRole, isLoading, roleChecked, clearRole } = useRole();
+	const { userRole, isLoading, roleChecked, clearRole } = useRole();
 	console.log("userRole", userRole);
-	
-	const [isConnected, setIsConnected] = useState(false); 
-	
-    const [isInitialCheckComplete, setIsInitialCheckComplete] = useState(false);
 
-    const toggleConnect = () => setIsConnected(!isConnected);
+	const [isConnected, setIsConnected] = useState(false);
+
+	const [isInitialCheckComplete, setIsInitialCheckComplete] = useState(false);
+
+	const toggleConnect = () => setIsConnected(!isConnected);
 
 	const navigate = useNavigate();
 	const [isopen, setisopen] = useState(false);
-	
+
 	const toggle = () => setisopen(!isopen);
 
 	useEffect(() => {
 		if (activeAccount?.address) {
-		  setIsConnected(true);
-		  localStorage.setItem('walletAddress', activeAccount.address);
+			setIsConnected(true);
+			localStorage.setItem('walletAddress', activeAccount.address);
 		} else {
-		  setIsConnected(false);
-		  clearRole();  
+			setIsConnected(false);
+			clearRole();
 		}
 		console.log("Address: now", activeAccount?.address);
-	  }, [activeAccount]);
+	}, [activeAccount]);
 
-	  if (!roleChecked) {
-        return <div>Loading in app.tsx...</div>;  // ✅ Loading shown only during Supabase checks
-    }
+	if (!roleChecked) {
+		return <div>Loading...</div>;  // ✅ Loading shown only during Supabase checks
+	}
 
 	return (
 		<div className="App">
@@ -70,9 +75,9 @@ export function App() {
 						<Route path="/register" element={<RegisterPage />} />
             			<Route path="*" element={<Navigate to="/login" replace />} />
 					</>
-                ) : (
+				) : (
 					<>
-                        {/* Common Routes - Available to All Roles */}
+						{/* Common Routes - Available to All Roles */}
 						<Route element={<ProtectedRoute allowedRoles={['charity', 'vendor', 'donor']} redirectPath="/" />}>
 							<Route path="/" element={<HomePage />} />
 							<Route path="/charity" element={<CharityPage />} />
@@ -84,7 +89,13 @@ export function App() {
 
 						{/* Charity-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['charity']} redirectPath="/" />}>
+							<Route path="/Vhack-2025/charity/home" element={<CharityHomePage />} />
 							<Route path="/Vhack-2025/charity/profile" element={<CharityProfile />} />
+							<Route path="/create-campaign" element={<CreateCampaign />} />
+							<Route path="/Vhack-2025/charity/vendor-page" element={<VendorPage />} />
+							<Route path="/charity-management" element={<CharityManagementPage />} />
+							<Route path="/charity/community/:type/:id" element={<CharityCommunityAdmin />} />
+							<Route path="/charity/general-communities" element={<GeneralFundCommunities />} />
 						</Route>
 
 						{/* Vendor-Specific Routes */}

@@ -90,6 +90,11 @@ const RegisterPage: React.FC = () => {
                 setError("❌ Failed to register. Please try again.");
             } else {
                 alert("✅ Registration successful!");
+                if (role === 'charity') {
+                    navigate('/Vhack-2025/charity/home');
+                } else {
+                    navigate(`/${role}`);
+                }
                 setTimeout(() => {
                     alert("🎉 Redirecting to the homepage...");
                     navigate('/dashboard');  // ✅ Redirect to the dashboard

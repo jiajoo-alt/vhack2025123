@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaBuilding, FaHandHoldingHeart, FaUsers, FaBullhorn, FaPencilAlt, FaPlus, FaSave, FaTimes, FaChevronDown } from "react-icons/fa";
+import { FaBuilding, FaHandHoldingHeart, FaUsers, FaBullhorn, FaPencilAlt, FaPlus, FaSave, FaTimes, FaChevronDown, FaGlobe, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import CharityInfo from "./components/CharityInfo";
 import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
-import Announcements from "./components/Announcements";
 import AddCampaignModal from "./components/AddCampaignModal";
 import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
-import { toast } from "react-toastify"; // Assuming you use react-toastify for notifications
+import { toast } from "react-toastify"; 
 
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -84,12 +83,12 @@ const CharityProfile: React.FC = () => {
   const handleAddCampaign = async (campaignData: FormData) => {
     try {
       setLoading(true);
-      await charityService.createCampaign(campaignData);
+      // Instead of calling the service, just log the data
+      console.log("Campaign Created:", Object.fromEntries(campaignData.entries()));
+      
+      // Mock a successful creation
       setShowAddCampaignModal(false);
-      // Refresh charity data to update stats
-      const updatedCharity = await charityService.getCharityProfile();
-      setCharityData(updatedCharity);
-      toast.success("Campaign created successfully!");
+      toast.success("Campaign created successfully! (Mock data)");
     } catch (err: any) {
       console.error("Error creating campaign:", err);
       toast.error(err.message || "Failed to create campaign. Please try again.");
@@ -120,10 +119,8 @@ const CharityProfile: React.FC = () => {
           {/* Quick Navigation */}
           <div className="flex gap-3 mt-8 relative z-10 overflow-x-auto pb-2 md:justify-center">
             {[
-              { id: 'info', label: 'Organization Info', icon: <FaBuilding /> },
               { id: 'campaigns', label: 'Campaigns', icon: <FaHandHoldingHeart /> },
               { id: 'community', label: 'Community', icon: <FaUsers /> },
-              { id: 'announcements', label: 'Announcements', icon: <FaBullhorn /> }
             ].map((section) => (
               <button
                 key={section.id}
@@ -155,8 +152,67 @@ const CharityProfile: React.FC = () => {
             </div>
             
             <div className="flex-1">
-              <h2 className="text-2xl md:text-3xl font-bold text-[var(--headline)]">{charityData.name}</h2>
+              <div className="flex justify-between items-start">
+                <h2 className="text-2xl md:text-3xl font-bold text-[var(--headline)]">{charityData.name}</h2>
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors"
+                >
+                  <FaPencilAlt /> Edit Profile
+                </button>
+              </div>
               <p className="text-[var(--paragraph)] mt-2 max-w-2xl">{charityData.description}</p>
+              
+              {/* Organization Details */}
+              <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--paragraph)]">
+                {charityData.founded && (
+                  <div className="flex items-center gap-2">
+                    <FaCalendarAlt className="text-[var(--secondary)]" />
+                    <span>Founded: {charityData.founded}</span>
+                  </div>
+                )}
+                {charityData.location && (
+                  <div className="flex items-center gap-2">
+                    <FaMapMarkerAlt className="text-[var(--tertiary)]" />
+                    <span>{charityData.location}</span>
+                  </div>
+                )}
+                {charityData.website && (
+                  <div className="flex items-center gap-2">
+                    <FaGlobe className="text-[var(--highlight)]" />
+                    <a 
+                      href={charityData.website.startsWith('http') ? charityData.website : `https://${charityData.website}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-[var(--highlight)] hover:underline transition-colors"
+                    >
+                      {charityData.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+                {charityData.email && (
+                  <div className="flex items-center gap-2">
+                    <FaEnvelope className="text-[var(--highlight)]" />
+                    <a 
+                      href={`mailto:${charityData.email}`}
+                      className="hover:text-[var(--highlight)] hover:underline transition-colors"
+                    >
+                      {charityData.email}
+                    </a>
+                  </div>
+                )}
+                {charityData.phone && (
+                  <div className="flex items-center gap-2">
+                    <FaPhone className="text-[var(--highlight)]" />
+                    <a 
+                      href={`tel:${charityData.phone}`}
+                      className="hover:text-[var(--highlight)] hover:underline transition-colors"
+                    >
+                      {charityData.phone}
+                    </a>
+                  </div>
+                )}
+              </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <Stat icon={<FaHandHoldingHeart />} value={`$${charityData.totalRaised?.toLocaleString() || '0'}`} label="Total Raised" />
@@ -167,35 +223,6 @@ const CharityProfile: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Organization Info Section */}
-        <section id="info" className="mb-12 scroll-mt-24 animate-fadeIn">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <FaBuilding className="text-[var(--highlight)] text-xl mr-3" />
-              <h2 className="text-2xl font-bold text-[var(--headline)]">Organization Information</h2>
-            </div>
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                isEditing ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-[var(--highlight)] text-white hover:bg-opacity-90'
-              } transition-colors`}
-            >
-              {isEditing ? (
-                <>
-                  <FaTimes /> Cancel Editing
-                </>
-              ) : (
-                <>
-                  <FaPencilAlt /> Edit Profile
-                </>
-              )}
-            </button>
-          </div>
-          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
-            <CharityInfo charity={charityData} isEditing={isEditing} onSave={handleSaveCharityData} />
-          </div>
-        </section>
 
         {/* Campaigns Section */}
         <section id="campaigns" className="mb-12 scroll-mt-24 animate-fadeIn">
@@ -230,19 +257,6 @@ const CharityProfile: React.FC = () => {
           </div>
         </section>
 
-        {/* Announcements Section */}
-        <section id="announcements" className="mb-12 scroll-mt-24 animate-fadeIn">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <FaBullhorn className="text-[var(--highlight)] text-xl mr-3" />
-              <h2 className="text-2xl font-bold text-[var(--headline)]">Announcements</h2>
-            </div>
-          </div>
-          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
-            <Announcements />
-          </div>
-        </section>
-
         {/* Back to top button */}
         <div className="fixed bottom-8 right-8 z-50">
           <button 
@@ -258,6 +272,24 @@ const CharityProfile: React.FC = () => {
       {/* Add Campaign Modal */}
       {showAddCampaignModal && (
         <AddCampaignModal onClose={() => setShowAddCampaignModal(false)} onSave={handleAddCampaign} />
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--main)] rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-[var(--stroke)] flex justify-between items-center">
+              <h2 className="text-xl font-bold text-[var(--headline)]">Edit Organization Profile</h2>
+              <button 
+                onClick={() => setIsEditing(false)}
+                className="text-[var(--paragraph)] hover:text-[var(--headline)] transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <CharityInfo charity={charityData} isEditing={true} onSave={handleSaveCharityData} />
+          </div>
+        </div>
       )}
     </div>
   );

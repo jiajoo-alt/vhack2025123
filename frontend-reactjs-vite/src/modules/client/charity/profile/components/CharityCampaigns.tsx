@@ -1,40 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaEye, FaChartLine, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { charityService, Campaign } from "../../../../../services/supabase/charityService";
 import { toast } from "react-toastify";
+import { mockCampaigns, Campaign } from "../../../../../utils/mockData";
+
+// Mock current charity organization ID (Global Relief)
+const CURRENT_CHARITY_ORG_ID = 1;
 
 const CharityCampaigns: React.FC = () => {
   const navigate = useNavigate();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Fetch campaigns on component mount
+  // Filter campaigns to only show those belonging to the current charity organization
+  const [campaigns, setCampaigns] = useState<Campaign[]>(
+    mockCampaigns.filter(campaign => campaign.organizationId === CURRENT_CHARITY_ORG_ID)
+  );
+  
+  // Simulate loading
   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        setLoading(true);
-        const data = await charityService.getCharityCampaigns();
-        setCampaigns(data);
-        setError(null);
-      } catch (err: any) {
-        console.error("Error fetching campaigns:", err);
-        setError(err.message || "Failed to load campaigns. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCampaigns();
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this campaign?")) {
       try {
-        await charityService.deleteCampaign(id);
+        // Remove from local state instead of calling service
         setCampaigns(campaigns.filter(campaign => campaign.id !== id));
-        toast.success("Campaign deleted successfully!");
+        toast.success("Campaign deleted successfully! (Mock data)");
       } catch (err: any) {
         console.error("Error deleting campaign:", err);
         toast.error(err.message || "Failed to delete campaign. Please try again.");
@@ -42,11 +39,11 @@ const CharityCampaigns: React.FC = () => {
     }
   };
 
-  const handleView = (id: string) => {
+  const handleView = (id: number) => {
     navigate(`/charity/${id}`);
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id: number) => {
     navigate(`/charity/edit/${id}`);
   };
 
@@ -59,107 +56,101 @@ const CharityCampaigns: React.FC = () => {
   }
 
   return (
-    <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
-      <div className="p-6 border-b border-[var(--stroke)]">
-        <h2 className="text-xl font-bold text-[var(--headline)]">Your Campaigns</h2>
-        <p className="text-[var(--paragraph)] text-sm mt-1">
-          Manage your active and past fundraising campaigns
-        </p>
-      </div>
-      
-      {campaigns.length > 0 ? (
+    <div className="overflow-x-auto">
+      {campaigns.length === 0 ? (
+        <div className="p-6 text-center text-[var(--paragraph)]">
+          No campaigns found. Create your first campaign to get started!
+        </div>
+      ) : (
         <table className="w-full">
-          <thead className="bg-[var(--background)]">
+          <thead className="bg-[var(--background)] border-b border-[var(--stroke)]">
             <tr>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Campaign</th>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Goal</th>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Progress</th>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Deadline</th>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Status</th>
-              <th className="text-left p-4 font-semibold text-[var(--headline)]">Actions</th>
+              <th className="p-4 text-left text-[var(--headline)]">Campaign</th>
+              <th className="p-4 text-left text-[var(--headline)]">Goal</th>
+              <th className="p-4 text-left text-[var(--headline)]">Progress</th>
+              <th className="p-4 text-left text-[var(--headline)]">Deadline</th>
+              <th className="p-4 text-left text-[var(--headline)]">Status</th>
+              <th className="p-4 text-left text-[var(--headline)]">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--stroke)]">
-            {campaigns.map(campaign => {
-              const progress = (campaign.current_amount / campaign.target_amount) * 100;
-              
-              return (
-                <tr key={campaign.id} className="hover:bg-[var(--background)] transition-colors">
-                  <td className="p-4">
-                    <div>
-                      <h3 className="font-medium text-[var(--headline)]">{campaign.title}</h3>
-                      <p className="text-sm text-[var(--paragraph)] line-clamp-1">{campaign.description}</p>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-1">
-                      <FaMoneyBillWave className="text-[var(--highlight)]" />
-                      <span>${campaign.target_amount.toLocaleString()}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                        <div 
-                          className="h-full rounded-full"
-                          style={{ 
-                            width: `${progress}%`,
-                            background: `linear-gradient(90deg, var(--highlight) 0%, var(--secondary) 100%)`
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-sm">${campaign.current_amount.toLocaleString()} ({Math.round(progress)}%)</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-1">
-                      <FaCalendarAlt className="text-[var(--tertiary)]" />
-                      <span>{campaign.deadline ? new Date(campaign.deadline).toLocaleDateString() : 'No deadline'}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      campaign.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleView(campaign.id)}
-                        className="p-2 text-[var(--paragraph)] hover:text-[var(--headline)] transition-colors"
-                        title="View Campaign"
-                      >
-                        <FaEye />
-                      </button>
-                      <button 
-                        onClick={() => handleEdit(campaign.id)}
-                        className="p-2 text-[var(--paragraph)] hover:text-[var(--highlight)] transition-colors"
-                        title="Edit Campaign"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(campaign.id)}
-                        className="p-2 text-[var(--paragraph)] hover:text-red-500 transition-colors"
-                        title="Delete Campaign"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+          <tbody>
+            {campaigns.map((campaign) => (
+              <tr key={campaign.id} className="border-b border-[var(--stroke)] hover:bg-[var(--background)] transition-colors">
+                <td className="p-4">
+                  <div className="font-medium text-[var(--headline)]">{campaign.name}</div>
+                  <div className="text-sm text-[var(--paragraph)] truncate max-w-xs">{campaign.description}</div>
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center gap-1">
+                    <FaMoneyBillWave className="text-green-500" />
+                    <span>${campaign.goal.toLocaleString()}</span>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <div className="w-full bg-[var(--background)] rounded-full h-2.5 mb-1">
+                    <div 
+                      className="bg-[var(--highlight)] h-2.5 rounded-full" 
+                      style={{ width: `${Math.min(100, (campaign.currentContributions / campaign.goal) * 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-[var(--paragraph)]">
+                    ${campaign.currentContributions.toLocaleString()} (
+                    {Math.round((campaign.currentContributions / campaign.goal) * 100)}%)
+                  </div>
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center gap-1">
+                    <FaCalendarAlt className="text-[var(--highlight)]" />
+                    <span>{new Date(campaign.deadline).toLocaleDateString()}</span>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    campaign.currentContributions >= campaign.goal ? 'bg-blue-100 text-blue-800' : 
+                    new Date(campaign.deadline) > new Date() ? 'bg-green-100 text-green-800' : 
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {campaign.currentContributions >= campaign.goal ? 'Completed' : 
+                     new Date(campaign.deadline) > new Date() ? 'Active' : 
+                     'Expired'}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleView(campaign.id)}
+                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                      title="View Campaign"
+                    >
+                      <FaEye />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(campaign.id)}
+                      className="p-2 text-yellow-500 hover:bg-yellow-50 rounded-full transition-colors"
+                      title="Edit Campaign"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(campaign.id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                      title="Delete Campaign"
+                    >
+                      <FaTrash />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/charity/analytics/${campaign.id}`)}
+                      className="p-2 text-purple-500 hover:bg-purple-50 rounded-full transition-colors"
+                      title="Campaign Analytics"
+                    >
+                      <FaChartLine />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-[var(--paragraph)]">You haven't created any campaigns yet.</p>
-        </div>
       )}
     </div>
   );
