@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaHandHoldingHeart, FaBuilding, FaUsers, FaHistory, FaChartLine } from "react-icons/fa";
 import CampaignCard from "../../../../components/cards/CampaignCard";
 import { useRole } from "../../../../contexts/RoleContext";
 import { mockDonorContributions } from "../../../../utils/mockData";
+import DonationModal from "../../../../components/modals/DonationModal";
 
 const OrganizationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,6 +68,15 @@ const OrganizationDetail: React.FC = () => {
     }))
   } : null;
   
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+
+  const handleDonationComplete = (amount: number, donationPolicy?: string) => {
+    console.log(`Donation of $${amount} completed for organization: ${organization.name}`);
+    if (donationPolicy) {
+      console.log(`Donation policy: ${donationPolicy}`);
+    }
+  };
+
   return (
     <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
       <div className="max-w-7xl mx-auto">
@@ -192,7 +202,10 @@ const OrganizationDetail: React.FC = () => {
             
             {/* Donation button */}
             <div className="flex justify-center mt-8">
-              <button className="button flex items-center gap-2 px-8 py-3 text-lg">
+              <button 
+                className="button flex items-center gap-2 px-8 py-3 text-lg"
+                onClick={() => setIsDonationModalOpen(true)}
+              >
                 <FaHandHoldingHeart />
                 Support This Organization
               </button>
@@ -224,6 +237,14 @@ const OrganizationDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <DonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
+        organizationId={organization.id}
+        organizationName={organization.name}
+        onDonationComplete={handleDonationComplete}
+      />
     </div>
   );
 };

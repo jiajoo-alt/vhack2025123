@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding } from "react-icons/fa";
 import { useRole } from "../../../../contexts/RoleContext";
 import { mockCampaigns, mockDonorContributions, mockOrganizations } from "../../../../utils/mockData";
+import DonationModal from "../../../../components/modals/DonationModal";
 
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { userRole } = useRole();
   const campaignId = parseInt(id || "0");
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
   // Find the campaign from our centralized mock data
   const campaign = mockCampaigns.find(c => c.id === campaignId);
@@ -49,6 +51,13 @@ const CampaignDetail: React.FC = () => {
   const progress = (campaign.currentContributions / campaign.goal) * 100;
   const timeLeft = Math.max(0, Math.floor((new Date(campaign.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
+  const handleDonationComplete = (amount: number, donationPolicy?: string) => {
+    // In a real app, you would update the campaign data after a successful donation
+    console.log(`Donation of $${amount} completed for campaign: ${campaign.name}`);
+    console.log(`Donation policy: ${donationPolicy || 'N/A'}`);
+    // You could also show a success message or redirect
+  };
+
   return (
     <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
       <div className="max-w-4xl mx-auto">
@@ -83,7 +92,7 @@ const CampaignDetail: React.FC = () => {
             </div>
             
             {/* Campaign stats */}
-            <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-3 gap-4">
               <div className="bg-white bg-opacity-20 p-3 rounded-lg text-center">
                 <div className="text-2xl font-bold">${campaign.currentContributions}</div>
                 <div className="text-sm">Raised</div>
@@ -169,7 +178,10 @@ const CampaignDetail: React.FC = () => {
             
             {/* Donation button */}
             <div className="flex justify-center mt-8">
-              <button className="button flex items-center gap-2 px-8 py-3 text-lg">
+              <button 
+                className="button flex items-center gap-2 px-8 py-3 text-lg"
+                onClick={() => setIsDonationModalOpen(true)}
+              >
                 <FaHandHoldingHeart />
                 Donate Now
               </button>
@@ -177,6 +189,17 @@ const CampaignDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Donation Modal */}
+      <DonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
+        campaignId={campaignId}
+        campaignName={campaign.name}
+        organizationId={campaign.organizationId}
+        organizationName={organization?.name}
+        onDonationComplete={handleDonationComplete}
+      />
     </div>
   );
 };
