@@ -12,9 +12,14 @@ import {
   FaGlobe,
   FaCalendarAlt,
   FaMoneyBillWave,
+  FaWallet,
+  FaChartPie,
+  FaInfoCircle,
+  FaExchangeAlt,
+  FaArrowRight
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { mockCampaigns, mockOrganizations, Campaign } from "../../../../utils/mockData";
+import { mockCampaigns, mockOrganizations, Campaign, mockDonationTrackers } from "../../../../utils/mockData";
 import AddCampaignModal from "../profile/components/AddCampaignModal";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -30,6 +35,7 @@ const CharityManagementPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'deadline' | 'goal' | 'progress'>('deadline');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showFilters, setShowFilters] = useState(false);
+  const [showFundDetails, setShowFundDetails] = useState(false);
   
   // Get the current organization
   const currentOrganization = mockOrganizations.find(org => org.id === CURRENT_CHARITY_ORG_ID);
@@ -38,6 +44,48 @@ const CharityManagementPage: React.FC = () => {
   const organizationCampaigns = mockCampaigns.filter(
     campaign => campaign.organizationId === CURRENT_CHARITY_ORG_ID
   );
+  
+  // Calculate fund statistics
+  const campaignFundsRaised = organizationCampaigns.reduce(
+    (sum, campaign) => sum + campaign.currentContributions, 0
+  );
+  
+  // Get general fund from organization data
+  const generalFundBalance = currentOrganization?.totalRaised || 0;
+  
+  // Calculate total funds (general + campaign specific)
+  const totalFunds = generalFundBalance + campaignFundsRaised;
+
+  // Get donation tracker data for this organization
+  const donationTracker = mockDonationTrackers.find(
+    tracker => tracker.recipientId === CURRENT_CHARITY_ORG_ID && tracker.recipientType === 'organization'
+  );
+
+  // Calculate percentages for the fund allocation chart
+  const generalFundPercentage = Math.round((generalFundBalance / totalFunds) * 100) || 0;
+  const campaignFundPercentage = Math.round((campaignFundsRaised / totalFunds) * 100) || 0;
+
+  // Calculate individual campaign percentages of total campaign funds
+  const campaignPercentages = organizationCampaigns.map(campaign => ({
+    id: campaign.id,
+    name: campaign.name,
+    amount: campaign.currentContributions,
+    percentage: Math.round((campaign.currentContributions / campaignFundsRaised) * 100) || 0
+  })).sort((a, b) => b.amount - a.amount);
+
+  // Mock fund usage data
+  const fundUsageData = [
+    { category: "Program Services", percentage: 75, color: "bg-blue-500" },
+    { category: "Administrative", percentage: 15, color: "bg-green-500" },
+    { category: "Fundraising", percentage: 10, color: "bg-yellow-500" }
+  ];
+
+  // Mock recent fund activities
+  const recentFundActivities = [
+    { id: 1, type: "Donation", amount: 5000, date: "2025-03-20", description: "Major donor contribution" },
+    { id: 2, type: "Withdrawal", amount: 2500, date: "2025-03-18", description: "Clean Water Initiative expenses" },
+    { id: 3, type: "Transfer", amount: 1500, date: "2025-03-15", description: "Funds allocated to Disaster Relief" }
+  ];
   
   // Apply filters and search
   const filteredCampaigns = organizationCampaigns
@@ -149,7 +197,7 @@ const CharityManagementPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+        className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
       >
         <div className="bg-white p-6 rounded-xl border border-[var(--stroke)] shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
@@ -166,9 +214,9 @@ const CharityManagementPage: React.FC = () => {
         <div className="bg-white p-6 rounded-xl border border-[var(--stroke)] shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[var(--paragraph)] mb-1">Total Raised</p>
+              <p className="text-[var(--paragraph)] mb-1">Campaign Funds</p>
               <h3 className="text-2xl font-bold text-[var(--headline)]">
-                ${organizationCampaigns.reduce((sum, campaign) => sum + campaign.currentContributions, 0).toLocaleString()}
+                ${campaignFundsRaised.toLocaleString()}
               </h3>
             </div>
             <div className="p-3 bg-green-100 text-green-600 rounded-full">
@@ -180,25 +228,281 @@ const CharityManagementPage: React.FC = () => {
         <div className="bg-white p-6 rounded-xl border border-[var(--stroke)] shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[var(--paragraph)] mb-1">Active Campaigns</p>
+              <p className="text-[var(--paragraph)] mb-1">General Fund</p>
               <h3 className="text-2xl font-bold text-[var(--headline)]">
-                {organizationCampaigns.filter(c => 
-                  new Date(c.deadline) > new Date() && c.currentContributions < c.goal
-                ).length}
+                ${generalFundBalance.toLocaleString()}
               </h3>
             </div>
             <div className="p-3 bg-purple-100 text-purple-600 rounded-full">
-              <FaCalendarAlt size={24} />
+              <FaWallet size={24} />
             </div>
           </div>
         </div>
+        
+        <div className="bg-white p-6 rounded-xl border border-[var(--stroke)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[var(--paragraph)] mb-1">Total Funds</p>
+              <h3 className="text-2xl font-bold text-[var(--headline)]">
+                ${totalFunds.toLocaleString()}
+              </h3>
+            </div>
+            <div className="p-3 bg-yellow-100 text-yellow-600 rounded-full">
+              <FaChartPie size={24} />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+      
+      {/* Fund Details Section (Expandable) */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-8"
+      >
+        <div 
+          className="bg-white p-4 rounded-xl border border-[var(--stroke)] shadow-sm cursor-pointer"
+          onClick={() => setShowFundDetails(!showFundDetails)}
+        >
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <FaWallet className="text-[var(--highlight)] mr-2" />
+              <h2 className="text-lg font-bold text-[var(--headline)]">Fund Details</h2>
+            </div>
+            <div>
+              {showFundDetails ? <FaChevronUp /> : <FaChevronDown />}
+            </div>
+          </div>
+        </div>
+        
+        <AnimatePresence>
+          {showFundDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="bg-white p-6 border-x border-b border-[var(--stroke)] rounded-b-xl shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* General Fund Details */}
+                  <div className="bg-[var(--background)] p-4 rounded-lg border border-[var(--stroke)]">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium text-[var(--headline)]">General Fund</h3>
+                      <span className="text-sm px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        Unrestricted
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold text-[var(--headline)] mb-1">
+                      ${generalFundBalance.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-[var(--paragraph)]">
+                      Available for any charitable purpose
+                    </p>
+                    <div className="mt-4 flex justify-end">
+                      <button className="px-3 py-1 bg-[var(--highlight)] text-white rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                        Manage Fund
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Campaign Funds Details */}
+                  <div className="bg-[var(--background)] p-4 rounded-lg border border-[var(--stroke)]">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium text-[var(--headline)]">Campaign Funds</h3>
+                      <span className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                        Restricted
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold text-[var(--headline)] mb-1">
+                      ${campaignFundsRaised.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-[var(--paragraph)]">
+                      Designated for specific campaigns
+                    </p>
+                    <div className="mt-4 flex justify-end">
+                      <button className="px-3 py-1 bg-[var(--highlight)] text-white rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                        View Breakdown
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Fund Allocation Chart */}
+                <div className="mt-6 p-4 bg-[var(--background)] rounded-lg border border-[var(--stroke)]">
+                  <h3 className="font-medium text-[var(--headline)] mb-4">Fund Allocation</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Main Fund Distribution */}
+                    <div>
+                      <h4 className="text-sm font-medium text-[var(--paragraph)] mb-2">Main Fund Distribution</h4>
+                      <div className="h-8 bg-gray-200 rounded-full overflow-hidden mb-2">
+                        <div 
+                          className="h-full bg-purple-500 flex items-center justify-center text-xs text-white"
+                          style={{ width: `${generalFundPercentage}%` }}
+                        >
+                          {generalFundPercentage}%
+                        </div>
+                        <div 
+                          className="h-full bg-green-500 flex items-center justify-center text-xs text-white"
+                          style={{ width: `${campaignFundPercentage}%`, marginTop: '-2rem' }}
+                        >
+                          {campaignFundPercentage}%
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-[var(--paragraph)]">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full mr-1"></div>
+                          General Fund
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
+                          Campaign Funds
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Fund Usage */}
+                    <div>
+                      <h4 className="text-sm font-medium text-[var(--paragraph)] mb-2">Fund Usage</h4>
+                      <div className="space-y-2">
+                        {fundUsageData.map((item, index) => (
+                          <div key={index}>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span>{item.category}</span>
+                              <span>{item.percentage}%</span>
+                            </div>
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${item.color}`}
+                                style={{ width: `${item.percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Campaign Fund Breakdown */}
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-[var(--paragraph)] mb-3">Campaign Fund Breakdown</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {campaignPercentages.map(campaign => (
+                        <div key={campaign.id} className="bg-white p-3 rounded-lg border border-[var(--stroke)]">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium truncate" style={{ maxWidth: '70%' }}>
+                              {campaign.name}
+                            </span>
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                              {campaign.percentage}%
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-blue-500"
+                              style={{ width: `${campaign.percentage}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-[var(--paragraph)] mt-1">
+                            ${campaign.amount.toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Recent Fund Activities */}
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-[var(--paragraph)] mb-3">Recent Fund Activities</h4>
+                    <div className="overflow-hidden rounded-lg border border-[var(--stroke)]">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {recentFundActivities.map(activity => (
+                            <tr key={activity.id}>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  {activity.type === "Donation" && <FaMoneyBillWave className="text-green-500 mr-2" />}
+                                  {activity.type === "Withdrawal" && <FaArrowRight className="text-red-500 mr-2" />}
+                                  {activity.type === "Transfer" && <FaExchangeAlt className="text-blue-500 mr-2" />}
+                                  <span className="text-sm text-gray-900">{activity.type}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                ${activity.amount.toLocaleString()}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {activity.date}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-500">
+                                {activity.description}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  {/* Monthly Donation Trends */}
+                  {donationTracker && (
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-[var(--headline)] mb-3">Monthly Donation Trends</h4>
+                      <div className="bg-white p-4 rounded-lg border border-[var(--stroke)]">
+                        <div className="flex items-end h-40 space-x-2">
+                          {donationTracker.donations.timeline.monthly.map((month, index) => {
+                            // Calculate the maximum amount for proper scaling
+                            const maxAmount = Math.max(...donationTracker.donations.timeline.monthly.map(m => m.amount));
+                            // Calculate height percentage (minimum 5% for visibility)
+                            const heightPercentage = maxAmount > 0 
+                              ? Math.max(5, (month.amount / maxAmount) * 100) 
+                              : 5;
+                              
+                            return (
+                              <div key={index} className="flex flex-col items-center flex-1">
+                                <div className="text-xs text-center mb-1 text-[var(--paragraph)]">
+                                  ${month.amount.toLocaleString()}
+                                </div>
+                                <div 
+                                  className="w-full bg-blue-500 rounded-t-sm" 
+                                  style={{ 
+                                    height: `${heightPercentage*1.2}px`,
+                                    width: '250px'
+                                  }}
+                                ></div>
+                                <span className="text-xs mt-1 text-[var(--paragraph)]">{month.month}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-4 text-sm text-center text-[var(--headline)] font-medium">
+                          Total donations: ${donationTracker.donations.total.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Campaign Management */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
         className="bg-white rounded-xl border border-[var(--stroke)] overflow-hidden mb-8"
       >
         <div className="p-6 border-b border-[var(--stroke)] flex justify-between items-center">

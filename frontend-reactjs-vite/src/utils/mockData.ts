@@ -335,4 +335,107 @@ export const mockDonorAutoDonations: AutoDonation[] = [
       }
     ]
   }
+];
+
+// Add these interfaces and mock data
+export interface Community {
+  id: number;
+  name: string;
+  members: number;
+  posts: number;
+  lastActive: string;
+  type: 'campaign' | 'organization';
+  organizationId: number;
+}
+
+export const mockCommunities: Community[] = [
+  {
+    id: 1,
+    name: "Clean Water Supporters",
+    members: 128,
+    posts: 45,
+    lastActive: "2h ago",
+    type: "campaign",
+    organizationId: 1
+  },
+  {
+    id: 2,
+    name: "Global Relief Community",
+    members: 520,
+    posts: 187,
+    lastActive: "1h ago",
+    type: "organization",
+    organizationId: 1
+  },
+  {
+    id: 3,
+    name: "Disaster Relief Network",
+    members: 342,
+    posts: 156,
+    lastActive: "3h ago",
+    type: "campaign",
+    organizationId: 1
+  }
+];
+
+// Add after the existing interfaces
+export interface DonationTracker {
+  id: number;
+  recipientId: number;
+  recipientType: 'campaign' | 'organization';
+  donations: {
+    total: number;
+    count: number;
+    timeline: {
+      daily: { 
+        date: string; 
+        amount: number;
+        isRecurring?: boolean;
+        transactionHash?: string;
+        message?: string;
+      }[];
+      weekly: { week: string; amount: number }[];
+      monthly: { month: string; amount: number }[];
+    };
+    topDonors: {
+      donorId: number;
+      name: string;
+      amount: number;
+      lastDonation: string;
+    }[];
+  };
+}
+
+// Add to existing mockData exports
+export const mockDonationTrackers: DonationTracker[] = [
+  {
+    id: 1,
+    recipientId: 1,
+    recipientType: 'organization',
+    donations: {
+      total: 250000,
+      count: 200,
+      timeline: {
+        daily: [
+          { date: '2025-03-20', amount: 2500 },
+          { date: '2025-03-19', amount: 3000 },
+          { date: '2025-03-18', amount: 1500 }
+        ],
+        weekly: [
+          { week: '2025-W12', amount: 15000 },
+          { week: '2025-W11', amount: 12000 },
+          { week: '2025-W10', amount: 18000 }
+        ],
+        monthly: [
+          { month: '2025-03', amount: 45000 },
+          { month: '2025-02', amount: 52000 },
+          { month: '2025-01', amount: 48000 }
+        ]
+      },
+      topDonors: [
+        { donorId: 1, name: "John Doe", amount: 25000, lastDonation: "2025-03-20" },
+        { donorId: 2, name: "Jane Smith", amount: 15000, lastDonation: "2025-03-19" }
+      ]
+    }
+  }
 ]; 

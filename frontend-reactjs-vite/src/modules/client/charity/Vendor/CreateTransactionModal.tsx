@@ -66,7 +66,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({ onClose
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-[var(--card-background)] p-6 rounded-lg shadow-xl border border-[var(--card-border)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-[var(--background)] p-6 rounded-lg shadow-xl border border-[var(--card-border)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold text-[var(--headline)] mb-4">Create New Transaction</h2>
         
         <div className="space-y-4">

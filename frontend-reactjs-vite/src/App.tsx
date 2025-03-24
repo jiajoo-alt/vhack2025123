@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import "./App.css";
@@ -18,8 +18,6 @@ import ThemeToggle from "./components/Button/ThemeToggleButton";
 import CharityPage from "./modules/client/common/charity/CharityPage";
 import CampaignDetail from "./modules/client/common/charity/CampaignDetail";
 import OrganizationDetail from "./modules/client/common/charity/OrganizationDetail";
-import CommunityPage from "./modules/client/common/community/CommunityPage";
-import CommunityDetail from "./modules/client/common/community/CommunityDetail";
 import DonorProfile from "./modules/client/donor/profile/DonorProfile";
 import CharityProfile from "./modules/client/charity/profile/CharityProfile";
 import CharityHomePage from "./modules/client/charity/CharityHomePage/CharityHomePage";
@@ -28,6 +26,21 @@ import CreateCampaign from "./components/form/CreateCampaign";
 import VendorPage from "./modules/client/charity/Vendor/VendorPage";
 import CharityCommunityAdmin from "./modules/client/charity/community/CharityCommunityAdmin";
 import GeneralFundCommunities from "./modules/client/charity/community/GeneralFundCommunities";
+
+const CommunityRedirect = () => {
+	const { id } = useParams();
+	return <Navigate to={`/charity/${id}?tab=community`} replace />;
+};
+
+const OrganizationRedirect = () => {
+	const { id } = useParams();
+	return <Navigate to={`/organization/${id}?tab=community`} replace />;
+};
+
+const TypedCommunityRedirect = () => {
+	const { type, id } = useParams();
+	return <Navigate to={type === 'campaign' ? `/charity/${id}?tab=community` : `/organization/${id}?tab=community`} replace />;
+};
 
 export function App() {
 	const activeAccount = useActiveAccount();
@@ -83,8 +96,24 @@ export function App() {
 							<Route path="/charity" element={<CharityPage />} />
 							<Route path="/charity/:id" element={<CampaignDetail />} />
 							<Route path="/organization/:id" element={<OrganizationDetail />} />
-							<Route path="/community" element={<CommunityPage />} />
-							<Route path="/community/:type/:id" element={<CommunityDetail />} />
+							
+							{/* Redirect community routes to campaign details */}
+							<Route 
+								path="/community" 
+								element={<Navigate to="/charity" replace />} 
+							/>
+							<Route 
+								path="/community/campaign/:id" 
+								element={<CommunityRedirect />} 
+							/>
+							<Route 
+								path="/community/organization/:id" 
+								element={<OrganizationRedirect />} 
+							/>
+							<Route 
+								path="/community/:type/:id" 
+								element={<TypedCommunityRedirect />} 
+							/>
 						</Route>
 
 						{/* Charity-Specific Routes */}
@@ -94,6 +123,18 @@ export function App() {
 							<Route path="/create-campaign" element={<CreateCampaign />} />
 							<Route path="/Vhack-2025/charity/vendor-page" element={<VendorPage />} />
 							<Route path="/charity-management" element={<CharityManagementPage />} />
+							
+							{/* Update charity community admin route to point to campaign details */}
+							<Route 
+								path="/charity/community/campaign/:id" 
+								element={<CommunityRedirect />} 
+							/>
+							<Route 
+								path="/charity/community/organization/:id" 
+								element={<OrganizationRedirect />} 
+							/>
+							
+							{/* Keep the admin route for now, but consider updating it later */}
 							<Route path="/charity/community/:type/:id" element={<CharityCommunityAdmin />} />
 							<Route path="/charity/general-communities" element={<GeneralFundCommunities />} />
 						</Route>

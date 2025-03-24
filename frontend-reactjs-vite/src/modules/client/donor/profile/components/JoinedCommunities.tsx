@@ -22,7 +22,13 @@ const JoinedCommunities: React.FC = () => {
         {communities.map((community) => (
           <div
             key={`${community.type}-${community.id}`}
-            onClick={() => navigate(`/community/${community.type}/${community.id}`)}
+            onClick={() => {
+              if (community.type === 'campaign') {
+                navigate(`/charity/${community.id}?tab=community`);
+              } else {
+                navigate(`/organization/${community.id}?tab=community`);
+              }
+            }}
             className="p-6 hover:bg-[var(--background)] transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-4">

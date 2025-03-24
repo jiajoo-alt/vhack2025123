@@ -23,7 +23,7 @@ interface TransactionCardProps {
 const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, onClose, onApprove }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-[var(--card-background)] p-6 rounded-lg shadow-xl border border-[var(--card-border)] max-w-md w-full">
+      <div className="bg-[var(--background)] p-6 rounded-lg shadow-xl border border-[var(--card-border)] max-w-md w-full">
         <h2 className="text-2xl font-bold text-[var(--headline)] mb-4">Transaction Details</h2>
         
         <div className="mb-4">
@@ -45,7 +45,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, onClose,
         <div className="mb-4">
           <h3 className="font-semibold text-[var(--headline)] mb-2">Items</h3>
           <div className="bg-[var(--background)] rounded-lg p-3">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm text-[var(--paragraph)]">
               <thead>
                 <tr className="border-b border-[var(--stroke)]">
                   <th className="text-left py-2">Item</th>
@@ -64,8 +64,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, onClose,
                   </tr>
                 ))}
                 <tr className="font-semibold">
-                  <td colSpan={3} className="text-right py-2">Total:</td>
-                  <td className="text-right py-2">${transaction.totalPrice.toLocaleString()}</td>
+                  <td colSpan={3} className="text-right py-2 text-[var(--headline)]">Total:</td>
+                  <td className="text-right py-2 text-[var(--headline)]">${transaction.totalPrice.toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
