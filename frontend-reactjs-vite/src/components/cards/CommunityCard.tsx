@@ -23,10 +23,18 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    if (type === 'campaign') {
+      navigate(`/charity/${id}?tab=community`);
+    } else {
+      navigate(`/organization/${id}?tab=community`);
+    }
+  };
+
   return (
     <div
-      onClick={() => navigate(`/community/${type}/${id}`)}
       className="group bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden hover:border-[var(--highlight)] transition-all duration-300 cursor-pointer"
+      onClick={handleClick}
     >
       <div className="p-6">
         <div className="flex items-center gap-4">

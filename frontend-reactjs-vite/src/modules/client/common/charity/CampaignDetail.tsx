@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding, FaEdit, FaTrash, FaComments, FaClock, FaThumbsUp, FaPlus, FaMapMarkerAlt, FaShare, FaTrophy, FaExchangeAlt, FaTimes } from "react-icons/fa";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { FaCalendarAlt, FaMoneyBillWave, FaArrowLeft, FaHandHoldingHeart, FaUsers, FaChartLine, FaHistory, FaBuilding, FaEdit, FaTrash, FaComments, FaClock, FaThumbsUp, FaPlus, FaMapMarkerAlt, FaShare, FaTrophy, FaExchangeAlt, FaTimes, FaHashtag, FaTags, FaFire } from "react-icons/fa";
 import { useRole } from "../../../../contexts/RoleContext";
-import { mockCampaigns, mockDonorContributions, mockOrganizations } from "../../../../utils/mockData";
+import { mockCampaigns, mockDonorContributions, mockOrganizations, mockDonationTrackers } from "../../../../utils/mockData";
 import DonationModal from "../../../../components/modals/DonationModal";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import PostFeed from "../../common/community/components/PostFeed";
 import DonationLeaderboard from "../../common/community/components/DonationLeaderboard";
 import TransactionTimeline from "../../common/community/components/TransactionTimeline";
+import DonationTracker from "../../../../components/donation/DonationTracker";
 
 // Floating Modal Component for Full Leaderboard
 const LeaderboardModal: React.FC<{
@@ -99,14 +100,20 @@ const LeaderboardModal: React.FC<{
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userRole } = useRole();
   const campaignId = parseInt(id || "0");
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
-  // Use a single tab for the community section (feed only)
-  // Add state for main content tabs
-  const [activeMainTab, setActiveMainTab] = useState<'transactions' | 'community'>('transactions');
   // Add state for showing full leaderboard modal
   const [showFullLeaderboard, setShowFullLeaderboard] = useState(false);
+  // Add new state for community features
+  const [activeSection, setActiveSection] = useState<'feed'>('feed');
+
+  // Keep this declaration that initializes based on URL
+  const [activeMainTab, setActiveMainTab] = useState<'transactions' | 'community'>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tab') === 'community' ? 'community' : 'transactions';
+  });
 
   // Find the campaign from our centralized mock data
   const campaign = mockCampaigns.find(c => c.id === campaignId);
@@ -168,6 +175,12 @@ const CampaignDetail: React.FC = () => {
     if (organization) {
       navigate(`/organization/${organization.id}`);
     }
+  };
+
+  // Update the tab change handler to update the URL
+  const handleTabChange = (tab: 'transactions' | 'community') => {
+    setActiveMainTab(tab);
+    navigate(`/charity/${campaignId}?tab=${tab}`, { replace: true });
   };
 
   return (
@@ -284,7 +297,7 @@ const CampaignDetail: React.FC = () => {
                 <div className="border-b border-[var(--stroke)]">
                   <div className="flex">
                     <button
-                      onClick={() => setActiveMainTab('transactions')}
+                      onClick={() => handleTabChange('transactions')}
                       className={`px-6 py-4 flex items-center gap-2 text-sm font-medium ${
                         activeMainTab === 'transactions' 
                         ? 'bg-[var(--highlight)] text-white' 
@@ -295,7 +308,7 @@ const CampaignDetail: React.FC = () => {
                       Transactions
                     </button>
                     <button
-                      onClick={() => setActiveMainTab('community')}
+                      onClick={() => handleTabChange('community')}
                       className={`px-6 py-4 flex items-center gap-2 text-sm font-medium ${
                         activeMainTab === 'community' 
                         ? 'bg-[var(--highlight)] text-white' 
@@ -335,7 +348,24 @@ const CampaignDetail: React.FC = () => {
                           {24} posts
                         </span>
                       </div>
-                      <PostFeed communityId={campaignId} communityType="campaign" />
+                      
+                      {/* Community Sub-Navigation */}
+                      <div className="flex mb-6 border-b border-[var(--stroke)]">
+                        <button
+                          onClick={() => setActiveSection('feed')}
+                          className={`px-4 py-2 text-sm font-medium ${
+                            activeSection === 'feed' 
+                            ? 'border-b-2 border-[var(--highlight)] text-[var(--highlight)]' 
+                            : 'text-[var(--paragraph)]'
+                          }`}
+                        >
+                          <FaComments className="inline mr-2" />
+                          Discussion Feed
+                        </button>
+                      </div>
+                      
+                      {/* Community Content Based on Selected View */}
+                      {activeSection === 'feed' && <PostFeed communityId={Number(id)} communityType="campaign" />}
                     </>
                   )}
                 </div>
@@ -556,6 +586,23 @@ const CampaignDetail: React.FC = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Donation Tracker */}
+            {userRole === 'charity' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mb-8"
+              >
+                <DonationTracker 
+                  tracker={mockDonationTrackers.find(t => 
+                    t.recipientId === campaignId && 
+                    t.recipientType === 'campaign'
+                  ) || mockDonationTrackers[0]} 
+                />
+              </motion.div>
             )}
           </div>
         </div>

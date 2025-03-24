@@ -4,7 +4,8 @@ import CharityInfo from "./components/CharityInfo";
 import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
 import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
+import { mockOrganizations, mockCampaigns, mockCommunities } from "../../../../utils/mockData";
 
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,45 +13,39 @@ const CharityProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Real charity data from Supabase
-  const [charityData, setCharityData] = useState<CharityProfileType>({
-    id: "",
-    name: "",
-    description: "",
-    logo: "",
-    founded: "",
-    location: "",
-    website: "",
-    email: "",
-    phone: "",
-    wallet_address: "",
+  // Get Global Relief organization data (id: 1)
+  const [charityData, setCharityData] = useState({
+    ...(mockOrganizations.find(org => org.id === 1) || {
+      id: 1,
+      name: "Global Relief",
+      description: "A worldwide organization dedicated to providing humanitarian aid in crisis situations.",
+      logo: "",
+      campaigns: 0,
+      totalRaised: 0
+    }),
+    email: "contact@globalrelief.org",
+    phone: "+1 (234) 567-890",
+    website: "globalrelief.org",
+    location: "New York, USA",
+    founded: "2005",
+    wallet_address: "0x123456789abcdef",
     role: "charity",
-    verified: false,
-    created_at: "",
-    totalRaised: 0,
-    activeCampaigns: 0,
-    supporters: 0,
-    communities: 0
+    verified: true,
+    created_at: new Date().toISOString()
   });
 
-  // Fetch charity data on component mount
-  useEffect(() => {
-    const fetchCharityData = async () => {
-      try {
-        setLoading(true);
-        const data = await charityService.getCharityProfile();
-        setCharityData(data);
-        setError(null);
-      } catch (err: any) {
-        console.error("Error fetching charity data:", err);
-        setError(err.message || "Failed to load charity profile. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Calculate additional stats from mock data
+  const activeCampaigns = mockCampaigns.filter(
+    campaign => campaign.organizationId === 1 && 
+    new Date(campaign.deadline) > new Date() && 
+    campaign.currentContributions < campaign.goal
+  ).length;
 
-    fetchCharityData();
-  }, []);
+  const supporters = mockCampaigns
+    .filter(campaign => campaign.organizationId === 1)
+    .reduce((sum, campaign) => sum + Math.floor(campaign.currentContributions / 100), 0);
+
+  const communities = mockCommunities.filter(community => community.organizationId === 1).length;
 
   // Function to scroll to section
   const scrollToSection = (id: string) => {
@@ -66,7 +61,11 @@ const CharityProfile: React.FC = () => {
     try {
       setLoading(true);
       const savedData = await charityService.updateCharityProfile(updatedData);
-      setCharityData(savedData);
+      setCharityData(prevData => ({
+        ...prevData,
+        ...savedData,
+        id: typeof savedData.id === 'string' ? parseInt(savedData.id) : savedData.id
+      }));
       setIsEditing(false);
       toast.success("Charity information updated successfully!");
     } catch (err: any) {
@@ -196,9 +195,9 @@ const CharityProfile: React.FC = () => {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <Stat icon={<FaHandHoldingHeart />} value={`$${charityData.totalRaised?.toLocaleString() || '0'}`} label="Total Raised" />
-                <Stat icon={<FaHandHoldingHeart />} value={charityData.activeCampaigns || 0} label="Active Campaigns" />
-                <Stat icon={<FaUsers />} value={charityData.supporters || 0} label="Supporters" />
-                <Stat icon={<FaUsers />} value={charityData.communities || 0} label="Communities" />
+                <Stat icon={<FaHandHoldingHeart />} value={activeCampaigns} label="Active Campaigns" />
+                <Stat icon={<FaUsers />} value={supporters} label="Supporters" />
+                <Stat icon={<FaUsers />} value={communities} label="Communities" />
               </div>
             </div>
           </div>
@@ -255,7 +254,11 @@ const CharityProfile: React.FC = () => {
                 <FaTimes />
               </button>
             </div>
-            <CharityInfo charity={charityData} isEditing={true} onSave={handleSaveCharityData} />
+            <CharityInfo 
+              charity={{...charityData, id: charityData.id.toString()}} 
+              isEditing={true} 
+              onSave={handleSaveCharityData} 
+            />
           </div>
         </div>
       )}
@@ -263,15 +266,21 @@ const CharityProfile: React.FC = () => {
   );
 };
 
-// Stat component for the profile card
-const Stat: React.FC<{ icon: React.ReactNode; value: string | number; label: string }> = ({ icon, value, label }) => {
-  return (
-    <div className="bg-[var(--background)] rounded-lg p-4 flex flex-col items-center text-center">
-      <div className="text-[var(--highlight)] mb-2">{icon}</div>
-      <div className="text-xl font-bold text-[var(--headline)]">{value}</div>
-      <div className="text-sm text-[var(--paragraph)]">{label}</div>
+// Stat component for displaying statistics
+const Stat: React.FC<{ icon: React.ReactNode; value: string | number; label: string }> = ({ 
+  icon, value, label 
+}) => (
+  <div className="bg-[var(--main)] rounded-lg p-4 border border-[var(--stroke)] hover:shadow-md transition-all">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-full bg-[var(--highlight)] bg-opacity-10 flex items-center justify-center text-[var(--highlight)]">
+        {icon}
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-[var(--headline)]">{value}</p>
+        <p className="text-sm text-[var(--paragraph)]">{label}</p>
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default CharityProfile; 

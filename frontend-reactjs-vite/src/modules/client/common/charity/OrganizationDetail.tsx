@@ -1,250 +1,445 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaHandHoldingHeart, FaBuilding, FaUsers, FaHistory, FaChartLine } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { FaArrowLeft, FaHandHoldingHeart, FaBuilding, FaUsers, FaHistory, FaChartLine, 
+         FaGlobe, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaComments, FaClock } from "react-icons/fa";
+import { motion } from "framer-motion";
 import CampaignCard from "../../../../components/cards/CampaignCard";
 import { useRole } from "../../../../contexts/RoleContext";
-import { mockDonorContributions } from "../../../../utils/mockData";
+import { mockOrganizations, mockCampaigns, mockDonorContributions, mockDonationTrackers } from "../../../../utils/mockData";
 import DonationModal from "../../../../components/modals/DonationModal";
+import { toast } from "react-toastify";
+import PostFeed from "../../common/community/components/PostFeed";
+import DonationTracker from "../../../../components/donation/DonationTracker";
 
 const OrganizationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userRole } = useRole();
   const organizationId = parseInt(id || "0");
-  
-  // Mock data for the organization
-  const organization = {
-    id: organizationId,
-    name: id === "1" ? "Global Relief" : 
-          id === "2" ? "EduCare" : 
-          id === "3" ? "Nature First" : 
-          id === "4" ? "Health Alliance" : 
-          id === "5" ? "Food for All" : 
-          id === "6" ? "Clean Earth Initiative" : `Organization ${id}`,
-    description: "This organization is dedicated to making a positive impact through various initiatives and campaigns. They work with communities around the world to address pressing issues and create sustainable solutions.",
-    logo: "",
-    founded: "2010",
-    location: "New York, USA",
-    website: "www.organization.org",
-    totalRaised: id === "1" ? 250000 : 
-                id === "2" ? 180000 : 
-                id === "3" ? 320000 : 
-                id === "4" ? 420000 : 
-                id === "5" ? 150000 : 
-                id === "6" ? 280000 : 200000,
-    campaigns: id === "1" ? 5 : 
-              id === "2" ? 3 : 
-              id === "3" ? 4 : 
-              id === "4" ? 6 : 
-              id === "5" ? 2 : 
-              id === "6" ? 4 : 3,
-  };
-  
-  // Mock data for organization's campaigns
-  const orgCampaigns = Array.from({ length: organization.campaigns }, (_, i) => ({
-    id: 100 + i,
-    name: `${organization.name} Campaign ${i + 1}`,
-    description: `This is a campaign by ${organization.name} focused on addressing specific needs in target communities.`,
-    goal: 20000 + (i * 10000),
-    currentContributions: 15000 + (i * 5000),
-    deadline: "2025-08-31",
-  }));
-
-  // Check if the donor has supported any campaigns from this organization
-  const supportedCampaignsFromOrg = mockDonorContributions.supportedCampaigns.filter(
-    campaign => campaign.organizationId === organizationId
-  );
-  
-  // Only create donor contributions data if there are supported campaigns
-  const donorContributions = supportedCampaignsFromOrg.length > 0 ? {
-    totalAmount: supportedCampaignsFromOrg.reduce((sum, campaign) => sum + campaign.donorContribution, 0),
-    supportedCampaigns: supportedCampaignsFromOrg.length,
-    percentageOfDonors: 4.2, // Mock percentage
-    recentDonations: supportedCampaignsFromOrg.map(campaign => ({
-      campaignId: campaign.id,
-      campaignName: campaign.name,
-      amount: campaign.donorContribution,
-      date: mockDonorContributions.contributionDetails[campaign.id]?.[0]?.date || "2024-01-01"
-    }))
-  } : null;
-  
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+  const [hasDonated, setHasDonated] = useState(false);
+  
+  const [communityView, setCommunityView] = useState<'feed' | 'members'>('feed');
 
-  const handleDonationComplete = (amount: number, donationPolicy?: string) => {
-    console.log(`Donation of $${amount} completed for organization: ${organization.name}`);
-    if (donationPolicy) {
-      console.log(`Donation policy: ${donationPolicy}`);
-    }
-  };
 
-  return (
-    <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
-      <div className="max-w-7xl mx-auto">
-        {/* Back button */}
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-[var(--paragraph)] hover:text-[var(--headline)] mb-6"
-        >
-          <FaArrowLeft />
-          Back to Organizations
-        </button>
-        
-        {/* Organization Card */}
-        <div className="bg-[var(--main)] rounded-xl shadow-lg overflow-hidden mb-8">
-          {/* Organization Header */}
-          <div className="bg-gradient-to-r from-[var(--secondary)] to-[var(--tertiary)] p-8 text-white">
-            <div className="flex items-center gap-6 mb-6">
-              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-[var(--secondary)] text-4xl font-bold">
-                {organization.logo ? <img src={organization.logo} alt={organization.name} /> : organization.name.charAt(0)}
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-2">{organization.name}</h1>
-                <p className="text-white text-opacity-90">{organization.location}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            {/* Organization stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <FaBuilding className="text-[var(--secondary)] text-xl" />
-                  <h3 className="font-semibold">Founded</h3>
-                </div>
-                <p className="text-2xl font-bold">{organization.founded}</p>
-                <p className="text-sm">{organization.location}</p>
-              </div>
-              
-              <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <FaHandHoldingHeart className="text-[var(--highlight)] text-xl" />
-                  <h3 className="font-semibold">Total Raised</h3>
-                </div>
-                <p className="text-2xl font-bold">${organization.totalRaised.toLocaleString()}</p>
-                <p className="text-sm">across all campaigns</p>
-              </div>
-              
-              <div className="bg-[var(--background)] p-4 rounded-lg shadow-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <FaUsers className="text-[var(--tertiary)] text-xl" />
-                  <h3 className="font-semibold">Active Campaigns</h3>
-                </div>
-                <p className="text-2xl font-bold">{organization.campaigns}</p>
-                <p className="text-sm">ongoing initiatives</p>
-              </div>
-            </div>
-            
-            {/* Description */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4 text-[var(--headline)]">About this organization</h2>
-              <p className="leading-relaxed">{organization.description}</p>
-            </div>
-            
-            {/* Donor-specific contribution section - only show if donor has contributed */}
-            {userRole === 'donor' && donorContributions && (
-              <div className="mb-8 bg-[var(--background)] p-6 rounded-lg border border-[var(--stroke)]">
-                <h3 className="text-lg font-bold mb-4 text-[var(--headline)] flex items-center gap-2">
-                  <FaHistory />
-                  Your Support for {organization.name}
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="text-2xl font-bold text-[var(--highlight)]">${donorContributions.totalAmount}</div>
-                    <div className="text-sm text-[var(--paragraph)]">Total Contributed</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="text-2xl font-bold text-[var(--secondary)]">{donorContributions.supportedCampaigns}</div>
-                    <div className="text-sm text-[var(--paragraph)]">Campaigns Supported</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <FaChartLine className="text-[var(--tertiary)] mr-2" />
-                      <div className="text-2xl font-bold text-[var(--tertiary)]">{donorContributions.percentageOfDonors}%</div>
-                    </div>
-                    <div className="text-sm text-[var(--paragraph)]">Of All Donors</div>
-                  </div>
-                </div>
-                
-                <div className="border-t border-[var(--stroke)] pt-4">
-                  <h4 className="font-semibold mb-2">Your Supported Campaigns</h4>
-                  <div className="space-y-2">
-                    {donorContributions.recentDonations.map((donation, index) => (
-                      <div 
-                        key={index} 
-                        className="flex justify-between items-center text-sm p-3 bg-white rounded cursor-pointer hover:bg-[var(--highlight)] hover:bg-opacity-5 transition-colors"
-                        onClick={() => navigate(`/charity/${donation.campaignId}`)}
-                      >
-                        <div>
-                          <div className="font-medium">{donation.campaignName}</div>
-                          <div className="text-xs text-[var(--paragraph)]">{new Date(donation.date).toLocaleDateString()}</div>
-                        </div>
-                        <div className="font-semibold text-[var(--highlight)]">${donation.amount}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Organization details */}
-            <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-semibold">Location:</p>
-                <p>{organization.location}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Website:</p>
-                <p>{organization.website}</p>
-              </div>
-            </div>
-            
-            {/* Donation button */}
-            <div className="flex justify-center mt-8">
-              <button 
-                className="button flex items-center gap-2 px-8 py-3 text-lg"
-                onClick={() => setIsDonationModalOpen(true)}
-              >
-                <FaHandHoldingHeart />
-                Support This Organization
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Organization's campaigns */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4 text-[var(--headline)]">Campaigns by {organization.name}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orgCampaigns.map(campaign => (
-              <div key={campaign.id} className="relative">
-                <CampaignCard
-                  id={campaign.id}
-                  name={campaign.name}
-                  description={campaign.description}
-                  goal={campaign.goal}
-                  currentContributions={campaign.currentContributions}
-                  deadline={campaign.deadline}
-                />
-                {userRole === 'donor' && mockDonorContributions.supportedCampaigns.some(c => c.id === campaign.id) && (
-                  <div className="absolute top-0 right-0 bg-[var(--highlight)] text-white px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
-                    Your contribution: ${mockDonorContributions.supportedCampaigns.find(c => c.id === campaign.id)?.donorContribution}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+  // Find the organization from our centralized mock data
+  const organization = mockOrganizations.find(org => org.id === organizationId);
+  
+  // If organization not found, show error or redirect
+  if (!organization) {
+    return (
+      <div className="p-6 bg-[var(--background)] text-[var(--paragraph)]">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">Organization not found</h1>
+          <button 
+            onClick={() => navigate('/charity')} 
+            className="button flex items-center gap-2 px-6 py-2 mx-auto"
+          >
+            <FaArrowLeft />
+            Back to Organizations
+          </button>
         </div>
       </div>
+    );
+  }
 
-      <DonationModal
-        isOpen={isDonationModalOpen}
-        onClose={() => setIsDonationModalOpen(false)}
-        organizationId={organization.id}
-        organizationName={organization.name}
-        onDonationComplete={handleDonationComplete}
-      />
+  // Get campaigns for this organization
+  const organizationCampaigns = mockCampaigns.filter(
+    campaign => campaign.organizationId === organizationId
+  );
+
+  // Calculate additional stats
+  const activeCampaigns = organizationCampaigns.filter(campaign => 
+    new Date(campaign.deadline) > new Date() && campaign.currentContributions < campaign.goal
+  ).length;
+
+  const supporters = organizationCampaigns.reduce(
+    (sum, campaign) => sum + Math.floor(campaign.currentContributions / 100), 0
+  );
+
+  // Extended organization details (would come from API in real app)
+  const extendedDetails = {
+    email: organizationId === 1 ? "contact@globalrelief.org" : "contact@organization.org",
+    phone: organizationId === 1 ? "+1 (234) 567-890" : "+1 (555) 123-4567",
+    website: organizationId === 1 ? "globalrelief.org" : "organization.org",
+    location: organizationId === 1 ? "New York, USA" : "San Francisco, USA",
+    founded: organizationId === 1 ? "2005" : "2010",
+    mission: organizationId === 1 
+      ? "To provide humanitarian aid and support to communities in crisis around the world through sustainable development programs and emergency relief efforts."
+      : "To make a positive impact through various initiatives and campaigns.",
+    impact: organizationId === 1 
+      ? "Helped over 2 million people across 45 countries with clean water, medical aid, and disaster relief."
+      : "Supported thousands of people through various programs.",
+    values: organizationId === 1 
+      ? ["Compassion", "Integrity", "Accountability", "Sustainability", "Collaboration"]
+      : ["Integrity", "Innovation", "Impact"]
+  };
+
+  useEffect(() => {
+    if (userRole === 'donor') {
+      const hasContributed = mockDonorContributions.supportedCampaigns.some(
+        contribution => mockCampaigns.some(
+          campaign => campaign.organizationId === organizationId && campaign.id === contribution.id
+        )
+      );
+      setHasDonated(hasContributed);
+    }
+  }, [organizationId, userRole]);
+
+  return (
+    <div className="min-h-screen bg-[var(--background)]">
+      {/* Hero Section with Organization Banner */}
+      <div className="relative h-64 bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)]">
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 z-10 text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+        >
+          <FaArrowLeft size={20} />
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10 pb-12">
+        {/* Organization Info Card - Overlapping Hero */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[var(--main)] rounded-xl shadow-xl border border-[var(--stroke)] p-6 mb-8"
+        >
+          <div className="flex items-start gap-6">
+            <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-[var(--highlight)] to-[var(--tertiary)] flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+              {organization.name.charAt(0)}
+            </div>
+            
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-bold text-[var(--headline)]">{organization.name}</h1>
+                {userRole === 'donor' && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsDonationModalOpen(true)}
+                    className="px-6 py-3 bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
+                  >
+                    <FaHandHoldingHeart className="text-xl" />
+                    Support {organization.name}
+                  </motion.button>
+                )}
+              </div>
+              <p className="text-[var(--paragraph)] mt-2">{extendedDetails.mission}</p>
+              
+              <div className="flex flex-wrap gap-4 mt-4">
+                <div className="flex items-center gap-2">
+                  <FaEnvelope className="text-[var(--highlight)]" />
+                  <a href={`mailto:${extendedDetails.email}`} className="hover:text-[var(--highlight)] transition-colors">
+                    {extendedDetails.email}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaGlobe className="text-[var(--highlight)]" />
+                  <a href={`https://${extendedDetails.website}`} target="_blank" rel="noopener noreferrer" 
+                     className="hover:text-[var(--highlight)] transition-colors">
+                    {extendedDetails.website}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaPhone className="text-[var(--highlight)]" />
+                  <a 
+                    href={`tel:${extendedDetails.phone}`}
+                    className="hover:text-[var(--highlight)] hover:underline transition-colors"
+                  >
+                    {extendedDetails.phone}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaMapMarkerAlt className="text-[var(--highlight)]" />
+                  <span>{extendedDetails.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaCalendarAlt className="text-[var(--highlight)]" />
+                  <span>Founded: {extendedDetails.founded}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] rounded-lg p-4 text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <FaHandHoldingHeart className="text-2xl" />
+                    <div>
+                      <p className="text-2xl font-bold">${organization.totalRaised.toLocaleString()}</p>
+                      <p className="text-sm opacity-90">Total Raised</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-[var(--secondary)] to-[var(--tertiary)] rounded-lg p-4 text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <FaBuilding className="text-2xl" />
+                    <div>
+                      <p className="text-2xl font-bold">{activeCampaigns}</p>
+                      <p className="text-sm opacity-90">Active Campaigns</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-[var(--tertiary)] to-[var(--highlight)] rounded-lg p-4 text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <FaUsers className="text-2xl" />
+                    <div>
+                      <p className="text-2xl font-bold">{supporters}</p>
+                      <p className="text-sm opacity-90">Supporters</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-[var(--highlight)] to-[var(--secondary)] rounded-lg p-4 text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <FaHandHoldingHeart className="text-2xl" />
+                    <div>
+                      <p className="text-2xl font-bold">{organization.campaigns}</p>
+                      <p className="text-sm opacity-90">Total Campaigns</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Impact Section */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] p-6">
+            <h2 className="text-2xl font-bold text-[var(--headline)] flex items-center gap-2 mb-4">
+              <FaChartLine className="text-[var(--highlight)]" />
+              Our Impact
+            </h2>
+            <p className="text-[var(--paragraph)] mb-6">{extendedDetails.impact}</p>
+            
+            <h3 className="text-xl font-bold text-[var(--headline)] mb-4">Our Values</h3>
+            <div className="flex flex-wrap gap-3">
+              {extendedDetails.values.map((value, index) => (
+                <span 
+                  key={index}
+                  className="px-4 py-2 bg-[var(--highlight)] text-white rounded-full text-sm font-medium"
+                >
+                  {value}
+                </span>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Donation Tracker */}
+        {userRole === 'charity' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <DonationTracker 
+              tracker={mockDonationTrackers.find(t => 
+                t.recipientId === organizationId && 
+                t.recipientType === 'organization'
+              ) || mockDonationTrackers[0]} 
+            />
+          </motion.div>
+        )}
+
+        {/* Campaigns Section */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-[var(--headline)] flex items-center gap-2">
+              <FaHandHoldingHeart className="text-[var(--highlight)]" />
+              Active Campaigns
+            </h2>
+          </div>
+          
+          {organizationCampaigns.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {organizationCampaigns.map((campaign) => (
+                <CampaignCard
+                  key={campaign.id}
+                  {...campaign}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-[var(--main)] rounded-xl border border-[var(--stroke)]">
+              <FaHandHoldingHeart className="mx-auto text-4xl text-[var(--paragraph)] opacity-30 mb-4" />
+              <p className="text-lg">No campaigns found for this organization.</p>
+            </div>
+          )}
+        </motion.section>
+
+        {/* Community Section */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8"
+        >
+          {userRole === 'donor' ? (
+            hasDonated ? (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-[var(--headline)] flex items-center gap-2">
+                        <FaUsers className="text-[var(--highlight)]" />
+                        Organization Community
+                      </h2>
+                      <p className="text-[var(--paragraph)] mt-1">
+                        Connect with other supporters and stay updated
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Community Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <motion.div 
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] rounded-lg p-4 text-white w-full"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FaUsers className="text-2xl" />
+                        <div>
+                          <p className="text-2xl font-bold">42</p>
+                          <p className="text-sm opacity-90">Members</p>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div 
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-gradient-to-r from-[var(--secondary)] to-[var(--tertiary)] rounded-lg p-4 text-white w-full"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FaComments className="text-2xl" />
+                        <div>
+                          <p className="text-2xl font-bold">24</p>
+                          <p className="text-sm opacity-90">Posts</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Community Navigation */}
+                  <div className="flex mb-6 bg-[var(--background)] rounded-lg p-1">
+                    <button
+                      onClick={() => setCommunityView('feed')}
+                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                        communityView === 'feed' 
+                        ? 'bg-[var(--highlight)] text-white shadow-lg' 
+                        : 'text-[var(--paragraph)] hover:text-[var(--headline)]'
+                      }`}
+                    >
+                      <FaComments className={communityView === 'feed' ? 'text-white' : 'text-[var(--highlight)]'} />
+                      Discussion Feed
+                    </button>
+                    <button
+                      onClick={() => setCommunityView('members')}
+                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                        communityView === 'members' 
+                        ? 'bg-[var(--highlight)] text-white shadow-lg' 
+                        : 'text-[var(--paragraph)] hover:text-[var(--headline)]'
+                      }`}
+                    >
+                      <FaUsers className={communityView === 'members' ? 'text-white' : 'text-[var(--highlight)]'} />
+                      Members
+                    </button>
+                  </div>
+
+                  {/* Community Content */}
+                  <div className="bg-[var(--background)] rounded-lg p-4">
+                    {communityView === 'feed' && (
+                      <PostFeed communityId={organizationId} communityType="organization" />
+                    )}
+                    {communityView === 'members' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <motion.div 
+                            key={i}
+                            whileHover={{ scale: 1.02 }}
+                            className="bg-[var(--main)] p-4 rounded-lg border border-[var(--stroke)] flex items-center gap-4 cursor-pointer"
+                          >
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--highlight)] to-[var(--tertiary)] flex items-center justify-center text-white font-bold shadow-lg">
+                              U{i}
+                            </div>
+                            <div>
+                              <p className="font-medium text-[var(--headline)]">User {i}</p>
+                              <div className="flex items-center gap-2 text-xs text-[var(--paragraph)]">
+                                <FaClock className="text-[var(--highlight)]" />
+                                Joined 2 weeks ago
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+                <div className="p-8 text-center">
+                  <FaHandHoldingHeart className="mx-auto text-4xl text-[var(--highlight)] mb-4" />
+                  <h2 className="text-2xl font-bold text-[var(--headline)] mb-2">Join Our Community</h2>
+                  <p className="text-[var(--paragraph)] mb-6">
+                    Support {organization.name} by making a donation to unlock access to our community features.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsDonationModalOpen(true)}
+                    className="px-6 py-3 bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2 mx-auto"
+                  >
+                    <FaHandHoldingHeart className="text-xl" />
+                    Make Your First Donation
+                  </motion.button>
+                </div>
+              </div>
+            )
+          ) : null}
+        </motion.section>
+      </div>
+      
+      {/* Donation Modal */}
+      {isDonationModalOpen && (
+        <DonationModal
+          isOpen={isDonationModalOpen}
+          onClose={() => setIsDonationModalOpen(false)}
+          organizationId={organizationId}
+          organizationName={organization.name}
+          onDonationComplete={(amount) => {
+            toast.success(`Thank you for your donation of $${amount} to ${organization.name}!`);
+            setIsDonationModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

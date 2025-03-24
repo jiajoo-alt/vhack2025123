@@ -1,32 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUsers, FaComments, FaClock, FaChevronRight } from "react-icons/fa";
+import { mockCommunities } from "../../../../../utils/mockData";
 
 const CommunityManagement: React.FC = () => {
   const navigate = useNavigate();
   
-  // Mock community data - In real app, fetch from your backend
-  const [communities, setCommunities] = useState([
-    {
-      id: 1,
-      name: "Clean Water Supporters",
-      members: 128,
-      posts: 45,
-      lastActive: "2h ago",
-      type: "campaign"
-    },
-    {
-      id: 2,
-      name: "Global Relief Community",
-      members: 520,
-      posts: 187,
-      lastActive: "1h ago",
-      type: "organization"
-    }
-  ]);
+  // Filter communities for Global Relief (organizationId: 1)
+  const communities = mockCommunities.filter(community => community.organizationId === 1);
 
   const navigateToCommunity = (type: string, id: number) => {
-    navigate(`/charity/community/${type}/${id}`);
+    // Update navigation to go to campaign details with community tab
+    if (type === 'campaign') {
+      navigate(`/charity/${id}?tab=community`);
+    } else {
+      navigate(`/organization/${id}?tab=community`);
+    }
   };
 
   // Calculate totals for the overview section
@@ -102,7 +91,7 @@ const CommunityManagement: React.FC = () => {
                     <h3 className="font-medium text-[var(--headline)] group-hover:text-[var(--highlight)] transition-colors">
                       {community.name}
                     </h3>
-                    <span className="px-2 py-1 bg-[var(--highlight)] bg-opacity-10 rounded-full text-xs font-medium text-[var(--highlight)]">
+                    <span className="px-2 py-1 bg-[var(--highlight)] bg-opacity-10 rounded-full text-xs font-medium text-white">
                       {community.type}
                     </span>
                   </div>

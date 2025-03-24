@@ -1,37 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHandHoldingHeart, FaDollarSign, FaCalendarAlt, FaChartLine, FaChevronRight } from "react-icons/fa";
+import { mockCampaigns } from "../../../../../utils/mockData";
 
 const CharityCampaigns: React.FC = () => {
   const navigate = useNavigate();
   
-  // Mock campaign data - In real app, fetch from your backend
-  const [campaigns, setCampaigns] = useState([
-    {
-      id: 1,
-      name: "Clean Water Initiative",
-      goal: 50000,
-      currentContributions: 32500,
-      deadline: "2023-12-31",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Education for All",
-      goal: 25000,
-      currentContributions: 25000,
-      deadline: "2023-10-15",
-      status: "completed"
-    },
-    {
-      id: 3,
-      name: "Healthcare Access",
-      goal: 75000,
-      currentContributions: 15000,
-      deadline: "2023-08-30",
-      status: "expired"
-    }
-  ]);
+  // Filter campaigns for Global Relief (organizationId: 1)
+  const campaigns = mockCampaigns.filter(campaign => campaign.organizationId === 1);
 
   const handleView = (id: number) => {
     navigate(`/charity/${id}`);
@@ -122,8 +98,15 @@ const CharityCampaigns: React.FC = () => {
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
                         {isActive ? 'Active' : isCompleted ? 'Completed' : 'Expired'}
                       </span>
+                      <span className="px-2 py-1 bg-[var(--highlight)] bg-opacity-10 rounded-full text-xs font-medium text-white">
+                        {campaign.category}
+                      </span>
                     </div>
                     
+                    <p className="text-sm text-[var(--paragraph)] line-clamp-2 mb-3">
+                      {campaign.description}
+                    </p>
+
                     <div className="flex items-center gap-4 text-sm text-[var(--paragraph)]">
                       <span className="flex items-center gap-1">
                         <FaDollarSign className="text-[var(--tertiary)]" />

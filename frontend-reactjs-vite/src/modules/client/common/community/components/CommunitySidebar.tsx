@@ -44,7 +44,13 @@ const CommunitySidebar: React.FC = () => {
             <div
               key={`${community.type}-${community.id}`}
               className={`flex items-center p-3 rounded-lg hover:bg-[var(--background)] cursor-pointer transition-colors`}
-              onClick={() => navigate(`/community/${community.type}/${community.id}`)}
+              onClick={() => {
+                if (community.type === 'campaign') {
+                  navigate(`/charity/${community.id}?tab=community`);
+                } else {
+                  navigate(`/organization/${community.id}?tab=community`);
+                }
+              }}
             >
               <div className="w-10 h-10 rounded-full bg-[var(--tertiary)] text-white flex items-center justify-center font-bold shrink-0">
                 {community.image ? (
