@@ -3,13 +3,11 @@ import { FaBuilding, FaHandHoldingHeart, FaUsers, FaBullhorn, FaPencilAlt, FaPlu
 import CharityInfo from "./components/CharityInfo";
 import CharityCampaigns from "./components/CharityCampaigns";
 import CommunityManagement from "./components/CommunityManagement";
-import AddCampaignModal from "./components/AddCampaignModal";
 import { charityService, CharityProfile as CharityProfileType } from "../../../../services/supabase/charityService";
 import { toast } from "react-toastify"; 
 
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [showAddCampaignModal, setShowAddCampaignModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,24 +72,6 @@ const CharityProfile: React.FC = () => {
     } catch (err: any) {
       console.error("Error updating charity data:", err);
       toast.error(err.message || "Failed to update charity information. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle adding a new campaign
-  const handleAddCampaign = async (campaignData: FormData) => {
-    try {
-      setLoading(true);
-      // Instead of calling the service, just log the data
-      console.log("Campaign Created:", Object.fromEntries(campaignData.entries()));
-      
-      // Mock a successful creation
-      setShowAddCampaignModal(false);
-      toast.success("Campaign created successfully! (Mock data)");
-    } catch (err: any) {
-      console.error("Error creating campaign:", err);
-      toast.error(err.message || "Failed to create campaign. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -231,13 +211,6 @@ const CharityProfile: React.FC = () => {
               <FaHandHoldingHeart className="text-[var(--highlight)] text-xl mr-3" />
               <h2 className="text-2xl font-bold text-[var(--headline)]">Campaigns</h2>
             </div>
-            <button 
-              onClick={() => setShowAddCampaignModal(true)}
-              className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors"
-              disabled={loading}
-            >
-              <FaPlus /> Add Campaign
-            </button>
           </div>
           <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
             <CharityCampaigns />
@@ -268,11 +241,6 @@ const CharityProfile: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Add Campaign Modal */}
-      {showAddCampaignModal && (
-        <AddCampaignModal onClose={() => setShowAddCampaignModal(false)} onSave={handleAddCampaign} />
-      )}
 
       {/* Edit Profile Modal */}
       {isEditing && (
