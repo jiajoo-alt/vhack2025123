@@ -99,7 +99,7 @@ const PurchasingTransactions: React.FC = () => {
   };
 
   return (
-    <div className="bg-[var(--main)] p-6 rounded-lg shadow-xl border border-[var(--stroke)]">
+    <div className="bg-[var(--main)] p-6 rounded-lg shadow-xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[var(--headline)]">Purchasing Transactions</h2>
         <div className="flex space-x-4">
@@ -132,7 +132,7 @@ const PurchasingTransactions: React.FC = () => {
             <div
               key={transaction.id}
               onClick={() => handleTransactionClick(transaction)}
-              className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex items-center cursor-pointer hover:bg-gray-100 transition-all"
+              className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex items-center cursor-pointer hover:bg-[var(--background)] transition-all"
             >
               <div className="flex-1">
                 <div className="flex justify-between">

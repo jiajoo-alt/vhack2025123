@@ -211,7 +211,7 @@ const CharityProfile: React.FC = () => {
               <h2 className="text-2xl font-bold text-[var(--headline)]">Campaigns</h2>
             </div>
           </div>
-          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+          <div className="bg-[var(--main)] rounded-xl overflow-hidden">
             <CharityCampaigns />
           </div>
         </section>
@@ -224,7 +224,7 @@ const CharityProfile: React.FC = () => {
               <h2 className="text-2xl font-bold text-[var(--headline)]">Community Management</h2>
             </div>
           </div>
-          <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
+          <div className="bg-[var(--main)] rounded-xl overflow-hidden">
             <CommunityManagement />
           </div>
         </section>

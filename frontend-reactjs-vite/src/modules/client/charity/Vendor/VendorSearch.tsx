@@ -73,9 +73,9 @@ const VendorSearch: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="bg-[var(--main)] p-6 rounded-lg shadow-xl">
       {/* Search and Filter Section */}
-      <div className="bg-[var(--main)] rounded-lg shadow-xl border border-[var(--stroke)] p-6 mb-6">
+      <div className="bg-[var(--background)] rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -85,7 +85,7 @@ const VendorSearch: React.FC = () => {
               placeholder="Search vendors by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-[var(--background)] border border-[var(--stroke)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+              className="w-full pl-10 pr-4 py-3 bg-[var(--main)] border border-[var(--stroke)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
             />
           </div>
           
@@ -98,7 +98,7 @@ const VendorSearch: React.FC = () => {
                 className={`px-4 py-2 rounded-full text-sm ${
                   categoryFilter === category
                     ? 'bg-[var(--highlight)] text-white'
-                    : 'bg-[var(--background)] text-[var(--paragraph)] hover:bg-gray-200'
+                    : 'bg-[var(--main)] text-[var(--paragraph)] hover:bg-gray-200'
                 } transition-all`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -114,7 +114,7 @@ const VendorSearch: React.FC = () => {
           filteredVendors.map(vendor => (
             <div 
               key={vendor.id}
-              className="bg-[var(--main)] rounded-lg shadow-md border border-[var(--stroke)] overflow-hidden hover:shadow-lg transition-all"
+              className="bg-[var(--background)] rounded-lg shadow-md border border-[var(--stroke)] overflow-hidden hover:shadow-lg transition-all"
             >
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
@@ -122,7 +122,7 @@ const VendorSearch: React.FC = () => {
                     <FaUserCircle className="text-[var(--highlight)] w-12 h-12 mr-3" />
                     <div>
                       <h3 className="font-bold text-[var(--headline)]">{vendor.name}</h3>
-                      <span className="text-sm text-[var(--paragraph)] bg-[var(--background)] px-2 py-1 rounded-full">
+                      <span className="text-sm text-[var(--paragraph)] bg-[var(--main)] px-2 py-1 rounded-full">
                         {vendor.category}
                       </span>
                     </div>
@@ -162,19 +162,12 @@ const VendorSearch: React.FC = () => {
                     <FaComments />
                     Contact
                   </button>
-                  <button
-                    onClick={() => navigate(`/Vhack-2025/charity/vendor-page?tab=transactions&vendor=${vendor.id}`)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[var(--background)] text-[var(--paragraph)] rounded-lg hover:bg-gray-200 transition-all"
-                  >
-                    <FaExchangeAlt />
-                    Transact
-                  </button>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="col-span-full bg-[var(--main)] rounded-lg shadow-md border border-[var(--stroke)] p-8 text-center">
+          <div className="col-span-full bg-[var(--background)] rounded-lg shadow-md p-8 text-center">
             <h2 className="text-xl font-bold text-[var(--headline)] mb-2">No vendors found</h2>
             <p className="text-[var(--paragraph)]">Try adjusting your search or filter criteria</p>
           </div>
