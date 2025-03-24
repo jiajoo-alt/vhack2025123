@@ -38,6 +38,25 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
     },
   ];
 
+  // Custom navigation items for vendor users
+  const vendorNavItems = [
+    {
+      title: "Home",
+      link: "/Vhack-2025/vendor/dashboard",
+      icon: <FaHome />,
+    },
+    {
+      title: "Charity",
+      link: "/Vhack-2025/vendor/charity",
+      icon: <FaListAlt />,
+    },
+    {
+      title: "Profile",
+      link: "/Vhack-2025/vendor/profile",
+      icon: <FaUserCircle />,
+    },
+  ];
+
   // Use default navBarItems for other roles
   const defaultNavItems = [
     {
@@ -53,7 +72,12 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
   ];
 
   // Select which nav items to use based on role
-  const navItems = userRole === 'charity' ? charityNavItems : defaultNavItems;
+  let navItems = defaultNavItems;
+  if (userRole === 'charity') {
+    navItems = charityNavItems;
+  } else if (userRole === 'vendor') {
+    navItems = vendorNavItems;
+  }
 
   return (
     <nav className={styles.nav}>

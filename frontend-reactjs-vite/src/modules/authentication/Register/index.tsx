@@ -39,7 +39,7 @@ const RegisterPage: React.FC = () => {
                     navigate('/charity');
                     break;
                 case 'vendor':
-                    navigate('/vendor');
+                    navigate('/Vhack-2025/vendor/dashboard');
                     break;
                 case 'donor':
                     navigate('/donor');
