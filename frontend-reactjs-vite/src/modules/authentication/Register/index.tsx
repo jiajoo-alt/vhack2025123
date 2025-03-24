@@ -21,7 +21,9 @@ const RegisterPage: React.FC = () => {
     // Vendor Fields
     const [ssm, setSSM] = useState<File | null>(null);
     const [tinNumber, setTinNumber] = useState('');
+    const [companyName, setCompanyName] = useState('');
     const [bankStatement, setBankStatement] = useState<File | null>(null);
+    const [founded, setFounded] = useState<string>('');
 
     const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -62,52 +64,120 @@ const RegisterPage: React.FC = () => {
 
     const handleRegister = async () => {
         const walletAddress = localStorage.getItem('walletAddress');
-
+    
         if (!walletAddress || walletAddress === 'Please connect your wallet') {
             setError("❗ Please connect your wallet first.");
             return;
         }
-
+    
         if (!username) {
             setError("❗ Username is required.");
             return;
         }
-
+    
         setIsRegistering(true);
         setError(null);
-
+    
         const userData = {
             wallet_address: walletAddress,
             role: role || 'donor', // Auto-set to 'donor' if no role selected
-            name: username
+            name: username,
+            verified: false,
+            created_at: new Date().toISOString() // Timestamp for user creation
         };
-
+    
         try {
-            const { error } = await supabase.from('users').insert(userData);
-
-            if (error) {
-                console.error('Error registering:', error.message);
+            const { data: newUser, error: userError } = await supabase
+                .from('users')
+                .insert(userData)
+                .select('id')
+                .single();
+    
+            if (userError) {
+                console.error('Error registering:', userError.message);
                 setError("❌ Failed to register. Please try again.");
-            } else {
-                alert("✅ Registration successful!");
-                if (role === 'charity') {
-                    navigate('/Vhack-2025/charity/home');
-                } else {
-                    navigate(`/${role}`);
-                }
-                setTimeout(() => {
-                    alert("🎉 Redirecting to the homepage...");
-                    navigate('/dashboard');  // ✅ Redirect to the dashboard
-                }, 2000);
+                setIsRegistering(false);
+                return;
             }
+    
+            // ✅ Push to 'charity_profiles' if the role is 'charity'
+            if (role === 'charity') {
+                const charityProfileData = {
+                    user_id: newUser.id,
+                    description,
+                    logo: logo ? logo.name : null,
+                    founded: new Date().getFullYear(), // Placeholder for founded year
+                    location,
+                    website,
+                    email,
+                    phone,
+                    created_at: new Date().toISOString()
+                };
+    
+                const { error: charityError } = await supabase
+                    .from('charity_profiles')
+                    .insert(charityProfileData);
+    
+                if (charityError) {
+                    console.error('Error creating charity profile:', charityError.message);
+                    setError("❌ Charity profile creation failed. Please try again.");
+                    setIsRegistering(false);
+                    return;
+                }
+            }
+    
+            // ✅ Push to 'vendor_profiles' if the role is 'vendor'
+            if (role === 'vendor') {
+                const vendorProfileData = {
+                    user_id: newUser.id,
+                    company_name: companyName, // Now explicitly defined as company name
+                    founded: founded || new Date().getFullYear(), // Defaults to current year if empty
+                    ssm: ssm ? ssm.name : null,
+                    tin_number: tinNumber,
+                    bank_statement: bankStatement ? bankStatement.name : null,
+                    location,
+                    email,
+                    phone,
+                    created_at: new Date().toISOString()
+                };
+
+                const { error: vendorError } = await supabase
+                    .from('vendor_profiles')
+                    .insert(vendorProfileData);
+
+                if (vendorError) {
+                    console.error('Error creating vendor profile:', vendorError.message);
+                    setError("❌ Vendor profile creation failed. Please try again.");
+                    setIsRegistering(false);
+                    return;
+                }
+            }
+
+    
+            // ✅ Successful registration
+            alert("✅ Registration successful!");
+            if (role === 'charity') {
+                navigate('/Vhack-2025/charity/home');
+            } else if (role === 'vendor') {
+                navigate('/Vhack-2025/vendor/home');
+            } else {
+                navigate(`/${role}`);
+            }
+    
+            setTimeout(() => {
+                alert("🎉 Redirecting to the homepage...");
+                navigate('/dashboard');
+            }, 2000);
+    
         } catch (error) {
             console.error('Unexpected error:', error);
             setError("❌ Something went wrong. Please try again.");
         }
-
+    
         setIsRegistering(false);
     };
-
+    
+    
     return (
         <div className="register-page">
             {/* Left Side - Big Image */}
@@ -225,6 +295,28 @@ const RegisterPage: React.FC = () => {
                 {role === 'vendor' && (
                     <div className="vendor-fields">
 
+                        {/* Company Name */}
+                        <div className="form-group">
+                            <label>Company Name (Required)</label>
+                            <input
+                                type="text"
+                                placeholder="Enter your company name"
+                                value={companyName} // Using username for now or you can add a new state
+                                onChange={(e) => setCompanyName(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Founded Year */}
+                        <div className="form-group">
+                            <label>Founded Year (Optional)</label>
+                            <input
+                                type="number"
+                                placeholder="Enter the year your company was founded"
+                                value={founded}
+                                onChange={(e) => setFounded(e.target.value)}
+                            />
+                        </div>
+
                         {/* SSM Field */}
                         <div className="form-group">
                             <label>SSM (Required)</label>
@@ -265,8 +357,42 @@ const RegisterPage: React.FC = () => {
                                 </p>
                             )}
                         </div>
+
+                        {/* Location */}
+                        <div className="form-group">
+                            <label>Location (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="Enter your company location"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Email */}
+                        <div className="form-group">
+                            <label>Email (Optional)</label>
+                            <input
+                                type="email"
+                                placeholder="example@company.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Phone Number */}
+                        <div className="form-group">
+                            <label>Phone Number (Optional)</label>
+                            <input
+                                type="tel"
+                                placeholder="Enter your phone number"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
                     </div>
                 )}
+
 
                 {/* Error Message */}
                 {error && <p className="error-message">{error}</p>}
