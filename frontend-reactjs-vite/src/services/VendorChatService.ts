@@ -12,7 +12,7 @@ export interface ChatMessage {
 
 export interface Chat {
     id: number;
-    vendorName: string;
+    organizationId: number;
     lastMessage: string;
     timestamp: string;
     unread: number;
@@ -46,13 +46,14 @@ interface VendorChatStore {
     sendTransactionProposal: (chatId: number, proposal: Omit<TransactionProposal, 'status'>) => void;
     acceptProposal: (chatId: number, messageId: number) => void;
     rejectProposal: (chatId: number, messageId: number) => void;
+    openChat: (organizationId: number) => void;
 }
 
 export const useVendorChatStore = create<VendorChatStore>((set) => ({
     chats: [
         {
             id: 1,
-            vendorName: "ABC Supplies",
+            organizationId: 1, // Global Relief
             lastMessage: "We can offer a 10% discount on your next order.",
             timestamp: "2 hours ago",
             unread: 2,
@@ -76,7 +77,7 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
         },
         {
             id: 2,
-            vendorName: "XYZ Traders",
+            organizationId: 2, // EduCare
             lastMessage: "The shipment will arrive next Monday.",
             timestamp: "1 day ago",
             unread: 0,
@@ -89,7 +90,7 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
         },
         {
             id: 3,
-            vendorName: "Global Goods",
+            organizationId: 3, // Nature First
             lastMessage: "Thank you for your order!",
             timestamp: "3 days ago",
             unread: 0,
@@ -102,13 +103,20 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
         },
         {
             id: 4,
-            vendorName: "Tech4Good",
-            lastMessage: "Would you be interested in our new educational tablets?",
+            organizationId: 4, // Health Alliance
+            lastMessage: "I'll prepare a transaction proposal for 80 medical kits.",
             timestamp: "1 week ago",
             unread: 0,
             online: false,
             avatar: null,
-            messages: [],
+            messages: [
+                { id: 1, sender: "Health Alliance", text: "Hi, we need medical supplies for our health program.", timestamp: "1 week ago, 2:00 PM", status: 'read' },
+                { id: 2, sender: "Vendor", text: "Hello! What specific medical supplies do you need?", timestamp: "1 week ago, 2:05 PM", status: 'read' },
+                { id: 3, sender: "Health Alliance", text: "We need medical kits with basic supplies.", timestamp: "1 week ago, 2:10 PM", status: 'read' },
+                { id: 4, sender: "Vendor", text: "I can help with that. How many kits do you need?", timestamp: "1 week ago, 2:15 PM", status: 'read' },
+                { id: 5, sender: "Health Alliance", text: "We need 80 medical kits.", timestamp: "1 week ago, 2:20 PM", status: 'read' },
+                { id: 6, sender: "Vendor", text: "I'll prepare a transaction proposal for 80 medical kits.", timestamp: "1 week ago, 2:25 PM", status: 'read' }
+            ],
         },
     ],
     
@@ -192,6 +200,44 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
                 fromVendor: true,
             },
         ],
+        4: [
+            {
+                id: 1,
+                text: "Hi, we need medical supplies for our health program.",
+                timestamp: "1 week ago, 2:00 PM",
+                fromVendor: false,
+            },
+            {
+                id: 2,
+                text: "Hello! What specific medical supplies do you need?",
+                timestamp: "1 week ago, 2:05 PM",
+                fromVendor: true,
+            },
+            {
+                id: 3,
+                text: "We need medical kits with basic supplies.",
+                timestamp: "1 week ago, 2:10 PM",
+                fromVendor: false,
+            },
+            {
+                id: 4,
+                text: "I can help with that. How many kits do you need?",
+                timestamp: "1 week ago, 2:15 PM",
+                fromVendor: true,
+            },
+            {
+                id: 5,
+                text: "We need 80 medical kits.",
+                timestamp: "1 week ago, 2:20 PM",
+                fromVendor: false,
+            },
+            {
+                id: 6,
+                text: "I'll prepare a transaction proposal for 80 medical kits.",
+                timestamp: "1 week ago, 2:25 PM",
+                fromVendor: true,
+            }
+        ],
     },
     
     sendMessage: (chatId, text) => set((state) => {
@@ -203,16 +249,16 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
             fromVendor: false,
         };
         
-        // Update messages for this chat
+        // Update messages
         const updatedMessages = {
             ...state.messages,
             [chatId]: [...(state.messages[chatId] || []), newMessage],
         };
         
-        // Update the chat with the new last message
+        // Update chat's last message
         const updatedChats = state.chats.map(chat => 
             chat.id === chatId 
-                ? { ...chat, lastMessage: text, timestamp: "Just now", unread: 0 }
+                ? { ...chat, lastMessage: text, timestamp: "Just now", unread: chat.unread + 1 }
                 : chat
         );
         
@@ -224,11 +270,8 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
             id: Date.now(),
             text: "Transaction Proposal",
             timestamp: "Just now",
-            fromVendor: false,
-            transactionProposal: {
-                ...proposal,
-                status: 'pending' as const
-            }
+            fromVendor: true,
+            transactionProposal: { ...proposal, status: 'pending' as const }
         };
         
         const updatedMessages = {
@@ -238,48 +281,43 @@ export const useVendorChatStore = create<VendorChatStore>((set) => ({
         
         const updatedChats = state.chats.map(chat => 
             chat.id === chatId 
-                ? { ...chat, lastMessage: "Sent a transaction proposal", timestamp: "Just now" }
+                ? { ...chat, lastMessage: "Transaction Proposal", timestamp: "Just now", unread: chat.unread + 1 }
                 : chat
         );
         
         return { messages: updatedMessages, chats: updatedChats };
     }),
     
-    acceptProposal: (chatId: number, messageId: number) => set((state) => {
+    acceptProposal: (chatId, messageId) => set((state) => {
         const updatedMessages = {
             ...state.messages,
-            [chatId]: state.messages[chatId].map(message => 
-                message.id === messageId 
-                    ? {
-                        ...message,
-                        transactionProposal: {
-                            ...message.transactionProposal!,
-                            status: 'accepted' as const
-                        }
-                    }
-                    : message
-            )
+            [chatId]: state.messages[chatId].map(msg => 
+                msg.id === messageId && msg.transactionProposal
+                    ? { ...msg, transactionProposal: { ...msg.transactionProposal, status: 'accepted' as const } }
+                    : msg
+            ),
         };
         
         return { messages: updatedMessages };
     }),
     
-    rejectProposal: (chatId: number, messageId: number) => set((state) => {
+    rejectProposal: (chatId, messageId) => set((state) => {
         const updatedMessages = {
             ...state.messages,
-            [chatId]: state.messages[chatId].map(message => 
-                message.id === messageId 
-                    ? {
-                        ...message,
-                        transactionProposal: {
-                            ...message.transactionProposal!,
-                            status: 'rejected' as const
-                        }
-                    }
-                    : message
-            )
+            [chatId]: state.messages[chatId].map(msg => 
+                msg.id === messageId && msg.transactionProposal
+                    ? { ...msg, transactionProposal: { ...msg.transactionProposal, status: 'rejected' as const } }
+                    : msg
+            ),
         };
         
         return { messages: updatedMessages };
-    })
+    }),
+
+    openChat: (organizationId) => {
+        // This will be handled by the chat modal component
+        // The chat modal will listen to this event and show the appropriate chat
+        const event = new CustomEvent('openVendorChat', { detail: { organizationId } });
+        window.dispatchEvent(event);
+    }
 })); 

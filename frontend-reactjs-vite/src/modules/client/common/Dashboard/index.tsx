@@ -9,10 +9,14 @@ const LandingPage = () => {
     const { userRole, isLoading } = useRole();  // Added `isLoading` for better role checking
     const navigate = useNavigate();
     
-    // Redirect charity users to their specific home page
+    // Redirect users to their specific home pages based on role
     useEffect(() => {
-        if (!isLoading && userRole === 'charity') {
-            navigate('/Vhack-2025/charity/home');
+        if (!isLoading) {
+            if (userRole === 'charity') {
+                navigate('/Vhack-2025/charity/home');
+            } else if (userRole === 'vendor') {
+                navigate('/Vhack-2025/vendor/dashboard');
+            }
         }
     }, [userRole, isLoading, navigate]);
 
