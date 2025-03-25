@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { FaCheckCircle, FaPlus, FaFilter } from "react-icons/fa";
+import { FaCheckCircle, FaPlus, FaFilter, FaBuilding } from "react-icons/fa";
 import TransactionCard from "./TransactionCard";
 import CreateTransactionModal from "./CreateTransactionModal";
+import { mockOrganizations } from "../../../../utils/mockData";
 
 const PurchasingTransactions: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<null | {
@@ -13,7 +14,7 @@ const PurchasingTransactions: React.FC = () => {
       price: number;
     }>;
     totalPrice: number;
-    vendor: string;
+    organizationId: number;
     status: 'pending' | 'approved' | 'rejected' | 'completed';
     fundSource: string;
     createdBy: 'charity' | 'vendor';
@@ -32,7 +33,7 @@ const PurchasingTransactions: React.FC = () => {
         { id: 2, name: "Water Testing Kits", quantity: 50, price: 10 }
       ],
       totalPrice: 1000,
-      vendor: "ABC Supplies",
+      organizationId: 1, // Global Relief
       status: 'pending',
       fundSource: "Clean Water Initiative",
       createdBy: 'charity',
@@ -44,7 +45,7 @@ const PurchasingTransactions: React.FC = () => {
         { id: 3, name: "School Supplies Kit", quantity: 200, price: 6 }
       ],
       totalPrice: 1200,
-      vendor: "XYZ Traders",
+      organizationId: 2, // EduCare
       status: 'approved',
       fundSource: "Education for All",
       createdBy: 'vendor',
@@ -56,7 +57,7 @@ const PurchasingTransactions: React.FC = () => {
         { id: 4, name: "Medical Kits", quantity: 80, price: 10 }
       ],
       totalPrice: 800,
-      vendor: "Global Goods",
+      organizationId: 4, // Health Alliance
       status: 'completed',
       fundSource: "General Fund",
       createdBy: 'charity',
@@ -68,7 +69,7 @@ const PurchasingTransactions: React.FC = () => {
         { id: 5, name: "Food Packages", quantity: 150, price: 10 }
       ],
       totalPrice: 1500,
-      vendor: "ABC Supplies",
+      organizationId: 3, // Nature First
       status: 'completed',
       fundSource: "Hunger Relief",
       createdBy: 'vendor',
@@ -101,7 +102,7 @@ const PurchasingTransactions: React.FC = () => {
   return (
     <div className="bg-[var(--main)] p-6 rounded-lg shadow-xl">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[var(--headline)]">Purchasing Transactions</h2>
+        <h2 className="text-2xl font-bold text-[var(--headline)]">Organization Transactions</h2>
         <div className="flex space-x-4">
           <div className="relative">
             <select
@@ -128,40 +129,46 @@ const PurchasingTransactions: React.FC = () => {
       {/* Transactions List */}
       <div className="space-y-4">
         {filteredTransactions.length > 0 ? (
-          filteredTransactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              onClick={() => handleTransactionClick(transaction)}
-              className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex items-center cursor-pointer hover:bg-[var(--background)] transition-all"
-            >
-              <div className="flex-1">
-                <div className="flex justify-between">
-                  <p className={`text-[var(--headline)] font-semibold ${
-                    transaction.status === 'completed' ? 'line-through' : ''
-                  }`}>
-                    {transaction.vendor} - {transaction.items.length} item(s)
+          filteredTransactions.map((transaction) => {
+            const organization = mockOrganizations.find(org => org.id === transaction.organizationId);
+            return (
+              <div
+                key={transaction.id}
+                onClick={() => handleTransactionClick(transaction)}
+                className="bg-[var(--card-background)] p-4 rounded-lg shadow-md border border-[var(--card-border)] flex items-center cursor-pointer hover:bg-[var(--background)] transition-all"
+              >
+                <div className="flex-1">
+                  <div className="flex justify-between">
+                    <div className="flex items-center gap-2">
+                      <FaBuilding className="text-[var(--highlight)]" />
+                      <p className={`text-[var(--headline)] font-semibold ${
+                        transaction.status === 'completed' ? 'line-through' : ''
+                      }`}>
+                        {organization?.name || 'Unknown Organization'} - {transaction.items.length} item(s)
+                      </p>
+                    </div>
+                    <span className={`text-sm px-2 py-1 rounded-full ${
+                      transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      transaction.status === 'approved' ? 'bg-blue-100 text-blue-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--paragraph)]">
+                    Total: ${transaction.totalPrice.toLocaleString()} | Fund: {transaction.fundSource}
                   </p>
-                  <span className={`text-sm px-2 py-1 rounded-full ${
-                    transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    transaction.status === 'approved' ? 'bg-blue-100 text-blue-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                  </span>
+                  <p className="text-sm text-[var(--paragraph)]">
+                    Created by: {transaction.createdBy === 'vendor' ? 'You' : organization?.name} | Date: {transaction.date}
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--paragraph)]">
-                  Total: ${transaction.totalPrice.toLocaleString()} | Fund: {transaction.fundSource}
-                </p>
-                <p className="text-sm text-[var(--paragraph)]">
-                  Created by: {transaction.createdBy === 'charity' ? 'You' : transaction.vendor} | Date: {transaction.date}
-                </p>
+                {/* Status icon */}
+                <div className={transaction.status === 'completed' ? "text-green-500" : "text-gray-400"}>
+                  <FaCheckCircle className={`w-5 h-5 ${transaction.status === 'completed' ? '' : 'opacity-30'}`} />
+                </div>
               </div>
-              {/* Status icon */}
-              <div className={transaction.status === 'completed' ? "text-green-500" : "text-gray-400"}>
-                <FaCheckCircle className={`w-5 h-5 ${transaction.status === 'completed' ? '' : 'opacity-30'}`} />
-              </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="p-4 text-center text-gray-500">
             No transactions found

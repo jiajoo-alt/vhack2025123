@@ -140,13 +140,13 @@ const VendorDashboard: React.FC = () => {
             isActive={activeTab === 'chats'} 
             onClick={() => handleTabChange('chats')}
             icon={<FaComments />}
-            label="Charity Communications"
+            label="Charity Chat"
           />
           <TabButton 
             isActive={activeTab === 'charities'} 
             onClick={() => handleTabChange('charities')}
             icon={<FaSearch />}
-            label="Find Charities"
+            label="Find Organisations"
           />
         </div>
 

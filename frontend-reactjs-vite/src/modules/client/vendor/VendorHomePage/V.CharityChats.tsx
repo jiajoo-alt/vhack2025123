@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaSearch, FaPlus, FaRegClock, FaClock } from "react-icons/fa";
 import { useVendorChatStore } from "../../../../services/VendorChatService";
+import { mockOrganizations } from "../../../../utils/mockData";
 import NewChatModal from "./NewChatModal";
 import ChatModal from "./ChatModal";
 
@@ -14,9 +15,10 @@ const CharityChats: React.FC<CharityChatsProps> = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Filter chats based on search
-  const filteredChats = chats.filter((chat) =>
-    chat.vendorName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredChats = chats.filter((chat) => {
+    const org = mockOrganizations.find(org => org.id === chat.organizationId);
+    return org?.name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   // Sort chats by recent first or oldest first based on timestamp
   const sortedChats = [...filteredChats].sort((a, b) => {
@@ -49,7 +51,7 @@ const CharityChats: React.FC<CharityChatsProps> = () => {
     <div className="p-6">
       <div className="flex justify-between mb-6">
         <h2 className="text-xl font-semibold text-[var(--headline)]">
-          Charity Communications
+          Organization Communications
         </h2>
         <button
           onClick={() => setShowNewChatModal(true)}
@@ -64,7 +66,7 @@ const CharityChats: React.FC<CharityChatsProps> = () => {
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--paragraph-light)]" />
         <input
           type="text"
-          placeholder="Search charities..."
+          placeholder="Search organizations..."
           className="w-full pl-10 pr-4 py-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -92,37 +94,40 @@ const CharityChats: React.FC<CharityChatsProps> = () => {
       {/* Chats list */}
       <div className="space-y-2">
         {sortedChats.length > 0 ? (
-          sortedChats.map((chat) => (
-            <div
-              key={chat.id}
-              onClick={() => setActiveChatId(chat.id)}
-              className="border border-[var(--stroke)] rounded-lg p-4 hover:shadow-md cursor-pointer transition-shadow"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium text-[var(--headline)]">
-                    {chat.vendorName}
-                  </h3>
-                  <p className="text-sm text-[var(--paragraph)] line-clamp-1 mt-1">
-                    {chat.lastMessage}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-xs text-[var(--paragraph-light)]">
-                    {chat.timestamp}
-                  </span>
-                  {chat.unread > 0 && (
-                    <span className="bg-[var(--highlight)] text-white text-xs rounded-full px-2 py-0.5 mt-1">
-                      {chat.unread}
+          sortedChats.map((chat) => {
+            const org = mockOrganizations.find(org => org.id === chat.organizationId);
+            return (
+              <div
+                key={chat.id}
+                onClick={() => setActiveChatId(chat.id)}
+                className="border border-[var(--stroke)] rounded-lg p-4 hover:shadow-md cursor-pointer transition-shadow"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-[var(--headline)]">
+                      {org?.name || "Unknown Organization"}
+                    </h3>
+                    <p className="text-sm text-[var(--paragraph)] line-clamp-1 mt-1">
+                      {chat.lastMessage}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-[var(--paragraph-light)]">
+                      {chat.timestamp}
                     </span>
-                  )}
+                    {chat.unread > 0 && (
+                      <span className="bg-[var(--highlight)] text-white text-xs rounded-full px-2 py-0.5 mt-1">
+                        {chat.unread}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="text-center py-8 text-[var(--paragraph-light)]">
-            {searchTerm ? "No charities found" : "No chats yet"}
+            {searchTerm ? "No organizations found" : "No chats yet"}
             {!searchTerm && (
               <p className="mt-2">
                 <button

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaPaperPlane, FaTimes, FaFile, FaDollarSign } from "react-icons/fa";
 import { useVendorChatStore } from "../../../../services/VendorChatService";
+import { mockOrganizations } from "../../../../utils/mockData";
 import TransactionProposalMessage from "./TransactionProposalMessage";
 import ChatTransactionModal from "./ChatTransactionModal";
 
@@ -18,6 +19,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ chatId, onClose }) => {
   // Find the current chat
   const currentChat = chats.find(chat => chat.id === chatId);
   
+  // Get the organization for this chat
+  const organization = currentChat ? mockOrganizations.find(org => org.id === currentChat.organizationId) : null;
+  
   // Get messages for this chat
   const chatMessages = messages[chatId] || [];
   
@@ -26,7 +30,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ chatId, onClose }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
   
-  if (!currentChat) {
+  if (!currentChat || !organization) {
     return null;
   }
   
@@ -51,7 +55,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ chatId, onClose }) => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-[var(--highlight)] text-white px-4 py-3 flex justify-between items-center">
-          <h3 className="font-medium">{currentChat.vendorName}</h3>
+          <h3 className="font-medium">{organization.name}</h3>
           <button onClick={onClose} className="p-1 hover:bg-white hover:bg-opacity-20 rounded">
             <FaTimes />
           </button>

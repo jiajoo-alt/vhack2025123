@@ -1,186 +1,176 @@
 import React, { useState } from "react";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
+import { mockOrganizations } from "../../../../utils/mockData";
 
 interface CreateTransactionModalProps {
   onClose: () => void;
 }
 
 const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({ onClose }) => {
-  const [vendor, setVendor] = useState("");
-  const [fundSource, setFundSource] = useState("General Fund");
-  const [items, setItems] = useState<Array<{
-    id: number;
-    name: string;
-    quantity: number;
-    price: number;
-  }>>([{ id: 1, name: "", quantity: 1, price: 0 }]);
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [items, setItems] = useState<Array<{ id: number; name: string; quantity: number; price: number }>>([]);
+  const [newItem, setNewItem] = useState({ name: "", quantity: 1, price: 0 });
+  const [fundSource, setFundSource] = useState("");
 
-  // Mock data for vendors and fund sources
-  const vendors = ["ABC Supplies", "XYZ Traders", "Global Goods", "Medical Supplies Inc."];
-  const fundSources = ["General Fund", "Clean Water Initiative", "Education for All", "Hunger Relief"];
-
-  const addItem = () => {
-    const newId = items.length > 0 ? Math.max(...items.map(item => item.id)) + 1 : 1;
-    setItems([...items, { id: newId, name: "", quantity: 1, price: 0 }]);
-  };
-
-  const removeItem = (id: number) => {
-    if (items.length > 1) {
-      setItems(items.filter(item => item.id !== id));
+  const handleAddItem = () => {
+    if (newItem.name && newItem.quantity > 0 && newItem.price > 0) {
+      setItems([...items, { ...newItem, id: Date.now() }]);
+      setNewItem({ name: "", quantity: 1, price: 0 });
     }
   };
 
-  const updateItem = (id: number, field: string, value: string | number) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, [field]: value } : item
-    ));
-  };
-
-  const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  const handleRemoveItem = (id: number) => {
+    setItems(items.filter(item => item.id !== id));
   };
 
   const handleSubmit = () => {
-    // Validate form
-    if (!vendor || items.some(item => !item.name || item.quantity <= 0 || item.price <= 0)) {
-      alert("Please fill in all fields correctly");
+    if (!selectedOrgId || items.length === 0 || !fundSource) {
       return;
     }
 
-    // Create transaction object
+    const totalPrice = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
     const transaction = {
-      vendor,
-      fundSource,
+      id: Date.now(),
       items,
-      totalPrice: calculateTotal(),
-      status: 'pending',
-      createdBy: 'charity',
+      totalPrice,
+      organizationId: selectedOrgId,
+      status: 'pending' as const,
+      fundSource,
+      createdBy: 'vendor' as const,
       date: new Date().toISOString().split('T')[0]
     };
 
-    console.log("Creating transaction:", transaction);
-    // Here you would typically send this to your API
-    
+    console.log('New transaction:', transaction);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-[var(--background)] p-6 rounded-lg shadow-xl border border-[var(--card-border)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-[var(--headline)] mb-4">Create New Transaction</h2>
-        
-        <div className="space-y-4">
-          {/* Vendor Selection */}
-          <div>
-            <label className="block text-[var(--headline)] font-medium mb-1">Vendor</label>
-            <select
-              value={vendor}
-              onChange={(e) => setVendor(e.target.value)}
-              className="w-full p-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
-              required
-            >
-              <option value="">Select a vendor</option>
-              {vendors.map((v, index) => (
-                <option key={index} value={v}>{v}</option>
-              ))}
-            </select>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-[var(--main)] rounded-lg p-6 max-w-2xl w-full mx-4 relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        >
+          <FaTimes />
+        </button>
+
+        <h2 className="text-2xl font-bold text-[var(--headline)] mb-6">Create New Transaction</h2>
+
+        {/* Organization Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-[var(--headline)] mb-2">
+            Select Organization
+          </label>
+          <select
+            value={selectedOrgId || ""}
+            onChange={(e) => setSelectedOrgId(Number(e.target.value))}
+            className="w-full p-2 bg-[var(--background)] border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+          >
+            <option value="">Select an organization...</option>
+            {mockOrganizations.map(org => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Fund Source */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-[var(--headline)] mb-2">
+            Fund Source
+          </label>
+          <input
+            type="text"
+            value={fundSource}
+            onChange={(e) => setFundSource(e.target.value)}
+            placeholder="Enter fund source..."
+            className="w-full p-2 bg-[var(--background)] border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+          />
+        </div>
+
+        {/* Items */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-[var(--headline)] mb-4">Items</h3>
           
-          {/* Fund Source Selection */}
-          <div>
-            <label className="block text-[var(--headline)] font-medium mb-1">Fund Source</label>
-            <select
-              value={fundSource}
-              onChange={(e) => setFundSource(e.target.value)}
-              className="w-full p-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
-              required
+          {/* Add New Item */}
+          <div className="flex gap-4 mb-4">
+            <input
+              type="text"
+              value={newItem.name}
+              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+              placeholder="Item name"
+              className="flex-1 p-2 bg-[var(--background)] border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+            />
+            <input
+              type="number"
+              value={newItem.quantity}
+              onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+              placeholder="Quantity"
+              min="1"
+              className="w-24 p-2 bg-[var(--background)] border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+            />
+            <input
+              type="number"
+              value={newItem.price}
+              onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })}
+              placeholder="Price"
+              min="0"
+              step="0.01"
+              className="w-32 p-2 bg-[var(--background)] border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
+            />
+            <button
+              onClick={handleAddItem}
+              className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg flex items-center gap-2 hover:bg-opacity-90"
             >
-              {fundSources.map((fund, index) => (
-                <option key={index} value={fund}>{fund}</option>
-              ))}
-            </select>
+              <FaPlus /> Add
+            </button>
           </div>
-          
-          {/* Items */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-[var(--headline)] font-medium">Items</label>
-              <button 
-                onClick={addItem}
-                className="text-[var(--highlight)] hover:text-opacity-80 flex items-center gap-1"
-              >
-                <FaPlus size={12} /> Add Item
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {items.map((item, index) => (
-                <div key={item.id} className="flex gap-2 items-start">
-                  <div className="flex-grow">
-                    <input
-                      type="text"
-                      placeholder="Item name"
-                      value={item.name}
-                      onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                      className="w-full p-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
-                      required
-                    />
-                  </div>
-                  <div className="w-20">
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.quantity}
-                      min="1"
-                      onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
-                      required
-                    />
-                  </div>
-                  <div className="w-24">
-                    <input
-                      type="number"
-                      placeholder="Price"
-                      value={item.price}
-                      min="0.01"
-                      step="0.01"
-                      onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-[var(--stroke)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--highlight)]"
-                      required
-                    />
-                  </div>
-                  <button 
-                    onClick={() => removeItem(item.id)}
-                    disabled={items.length <= 1}
-                    className={`p-2 rounded-lg ${
-                      items.length <= 1 
-                        ? 'text-gray-300 cursor-not-allowed' 
-                        : 'text-red-500 hover:bg-red-50'
-                    }`}
-                  >
-                    <FaTrash />
-                  </button>
+
+          {/* Items List */}
+          <div className="space-y-2">
+            {items.map(item => (
+              <div key={item.id} className="flex items-center gap-4 p-2 bg-[var(--background)] rounded-lg">
+                <div className="flex-1">{item.name}</div>
+                <div className="w-24 text-right">{item.quantity}</div>
+                <div className="w-32 text-right">${item.price.toLocaleString()}</div>
+                <div className="w-40 text-right font-semibold">
+                  ${(item.quantity * item.price).toLocaleString()}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Total */}
-          <div className="text-right font-semibold text-[var(--headline)]">
-            Total: ${calculateTotal().toLocaleString()}
+                <button
+                  onClick={() => handleRemoveItem(item.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-        
-        <div className="mt-6 flex justify-end space-x-4">
+
+        {/* Total */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center text-lg font-semibold text-[var(--headline)]">
+            <span>Total Amount:</span>
+            <span>
+              ${items.reduce((sum, item) => sum + (item.quantity * item.price), 0).toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-[var(--stroke)] text-[var(--paragraph)] rounded-lg hover:bg-[var(--stroke)] transition-all"
+            className="px-4 py-2 text-[var(--paragraph)] hover:text-[var(--headline)]"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg shadow-md hover:bg-opacity-90 transition-all"
+            disabled={!selectedOrgId || items.length === 0 || !fundSource}
+            className="px-4 py-2 bg-[var(--highlight)] text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Create Transaction
           </button>
