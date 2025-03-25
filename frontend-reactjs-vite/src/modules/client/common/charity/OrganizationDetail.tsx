@@ -150,7 +150,7 @@ const OrganizationDetail: React.FC = () => {
                     className="px-6 py-3 bg-[var(--highlight)] text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
                   >
                     <FaComments className="text-xl" />
-                    Contact for Quotation
+                    Send Offer
                   </motion.button>
                 )}
                 {userRole === 'donor' && (
