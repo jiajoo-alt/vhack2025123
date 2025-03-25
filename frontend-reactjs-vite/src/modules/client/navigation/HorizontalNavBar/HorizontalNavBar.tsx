@@ -46,11 +46,6 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       icon: <FaHome />,
     },
     {
-      title: "Charity",
-      link: "/Vhack-2025/vendor/charity",
-      icon: <FaListAlt />,
-    },
-    {
       title: "Profile",
       link: "/Vhack-2025/vendor/profile",
       icon: <FaUserCircle />,

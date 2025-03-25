@@ -27,6 +27,7 @@ import VendorPage from "./modules/client/charity/Vendor/VendorPage";
 import CharityCommunityAdmin from "./modules/client/charity/community/CharityCommunityAdmin";
 import GeneralFundCommunities from "./modules/client/charity/community/GeneralFundCommunities";
 import VendorDashboard from "./modules/client/vendor/VendorHomePage/VendorDashboard";
+import VendorProfile from "./modules/client/vendor/VendorProfile";
 
 const CommunityRedirect = () => {
 	const { id } = useParams();
@@ -143,6 +144,7 @@ export function App() {
 						{/* Vendor-Specific Routes */}
 						<Route element={<ProtectedRoute allowedRoles={['vendor']} redirectPath="/" />}>
 							<Route path="/Vhack-2025/vendor/dashboard" element={<VendorDashboard />} />
+							<Route path="/Vhack-2025/vendor/profile" element={<VendorProfile />} />
 						</Route>
 
 						{/* Donor-Specific Routes */}

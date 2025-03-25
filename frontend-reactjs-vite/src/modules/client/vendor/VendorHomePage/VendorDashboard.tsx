@@ -180,7 +180,7 @@ const VendorDashboard: React.FC = () => {
                 <FaSearch className="text-purple-600" />
               </div>
               <div>
-                <h2 className="font-medium text-[var(--headline)]">Find Charities</h2>
+                <h2 className="font-medium text-[var(--headline)]">Find Organizations</h2>
                 <p className="text-sm text-[var(--paragraph)]">Discover charity organizations that might need your products</p>
               </div>
             </div>
