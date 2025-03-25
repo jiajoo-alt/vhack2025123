@@ -57,8 +57,8 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
     },
   ];
 
-  // Use default navBarItems for other roles
-  const defaultNavItems = [
+  // Custom navigation items for donor users
+  const donorNavItems = [
     {
       title: "Home",
       link: "/",
@@ -69,10 +69,15 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
       link: "/charity",
       icon: <FaListAlt />,
     },
+    {
+      title: "Profile",
+      link: "/donor/profile",
+      icon: <FaUserCircle />,
+    },
   ];
 
   // Select which nav items to use based on role
-  let navItems = defaultNavItems;
+  let navItems = donorNavItems;
   if (userRole === 'charity') {
     navItems = charityNavItems;
   } else if (userRole === 'vendor') {
@@ -81,7 +86,7 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
 
   return (
     <nav className={styles.nav}>
-      <Link to={userRole === 'charity' ? "/Vhack-2025/charity/home" : "/"} className={styles.link}>
+      <Link to={userRole === 'charity' ? "/Vhack-2025/charity/home" : userRole === 'vendor' ? "/Vhack-2025/vendor/dashboard" : "/"} className={styles.link}>
         <img src={logoPNGImage} alt="Power Stake Name" className={styles.logoIcon} />
         {/* <img src={logoNameImage} alt="Power Stake Name" className={styles.logoName} /> */}
         <span className={styles.logoName}>DermaNow</span>
@@ -98,16 +103,6 @@ const HorizontalNavbar: React.FC<NavbarProps> = ({ toggle }) => {
             {item.title}
           </NavLink>
         ))}
-        {userRole === 'donor' && (
-          <NavLink
-            className={({ isActive }) =>
-              isActive ? `${styles.link} ${styles.active}` : styles.link
-            }
-            to="/donor/profile"
-          >
-            My Profile
-          </NavLink>
-        )}
       </div>
       <div className={styles.loginButtonMobileHidden}>
         <div className={styles.icons}>
