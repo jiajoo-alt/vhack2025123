@@ -3,6 +3,7 @@
   display: flex;
   height: 100vh;
   background-color: var(--background);
+  overflow: hidden;
 }
 
 /* Left Section - Image & Branding */
@@ -12,10 +13,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  max-height: 100vh; /* Prevent overflow */
 }
 
 .register-image {
   max-width: 80%;
+  max-height: 90vh;
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
 }
@@ -28,8 +31,10 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   text-align: center;
+  overflow-y: auto; /* Enable scrolling when charity/vendor is selected */
+  max-height: 100vh; /* Prevent content overflow */
 }
 
 /* Headings */
@@ -102,47 +107,9 @@ input:disabled {
   color: #888;
 }
 
-/* Username Field */
-.form-group input[placeholder="Enter your username"] {
-  border: 2px solid var(--paragraph);
-  background-color: var(--background);
-}
-
-.form-group input[placeholder="Enter your username"]:focus {
-  border-color: var(--highlight);
-  background-color: #fff7e6;
-  box-shadow: 0 0 6px rgba(250, 174, 43, 0.5);
-}
-
-/* File Upload Styling */
-input[type="file"] {
-  border: 2px solid var(--paragraph);
-  background-color: var(--background);
-  color: var(--headline);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-
-input[type="file"]:hover {
-  background-color: var(--highlight);
-  color: var(--button-text);
-}
-
-/* File Preview Section */
-.file-preview {
-  margin-top: 5px;
-  color: var(--headline);
-  background-color: #f2f7f5;
-  border: 1px solid var(--paragraph);
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
 /* Vendor Fields */
-.vendor-fields {
+.vendor-fields,
+.charity-fields {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -150,7 +117,6 @@ input[type="file"]:hover {
 }
 
 /* User Info Section */
-/* User Info Container */
 .user-info-container {
   display: flex;
   gap: 20px; /* Adds space between the two sections */
@@ -211,18 +177,6 @@ input[type="file"]:hover {
   background-color: var(--highlight);
 }
 
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-  .user-info-container {
-    flex-direction: column; /* Stacks vertically on smaller screens */
-  }
-
-  .connect-button-container {
-    width: 100%; /* Full width for better visibility */
-    margin-top: 10px;
-  }
-}
-
 /* Register Button */
 .register-button {
   width: 100%;
@@ -278,5 +232,10 @@ input[type="file"]:hover {
 
   .role-tabs {
     flex-wrap: wrap;
+  }
+
+  .register-right {
+    max-height: 100vh; /* Prevent content overflow */
+    overflow-y: auto; /* Enable scroll for charity/vendor fields */
   }
 }
