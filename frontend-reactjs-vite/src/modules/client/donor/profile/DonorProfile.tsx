@@ -4,6 +4,7 @@ import DonationHistory from "./components/DonationHistory";
 import JoinedCommunities from "./components/JoinedCommunities";
 import UserPosts from "./components/UserPosts";
 import ContributionStats from "./components/ContributionStats";
+import LoginButton from "../../../../components/Button/LoginButton";
 
 const DonorProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'donations' | 'communities' | 'posts'>('donations');
@@ -51,12 +52,16 @@ const DonorProfile: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div className="mt-4 md:mt-0">
+                <div className="flex items-center justify-between gap-4">
+                  <LoginButton />
+                  {/* <div className="mt-4 md:mt-0">
                   <div className="bg-[var(--background)] px-4 py-2 rounded-lg text-sm font-medium text-[var(--headline)] flex items-center gap-2 border border-[var(--stroke)]">
                     <span className="font-bold">Wallet:</span>
                     <span className="font-mono">{userData.walletAddress}</span>
                   </div>
+                </div> */}
                 </div>
+                
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

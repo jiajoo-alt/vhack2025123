@@ -7,6 +7,8 @@ import { charityService, CharityProfile as CharityProfileType } from "../../../.
 import { toast } from "react-toastify";
 import { mockOrganizations, mockCampaigns, mockCommunities } from "../../../../utils/mockData";
 
+import LoginButton from "../../../../components/Button/LoginButton";
+
 const CharityProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -133,12 +135,15 @@ const CharityProfile: React.FC = () => {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <h2 className="text-2xl md:text-3xl font-bold text-[var(--headline)]">{charityData.name}</h2>
-                <button 
+                <div className="flex items-center justify-between gap-4">
+                  <LoginButton />
+                  <button 
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors"
-                >
+                  >
                   <FaPencilAlt /> Edit Profile
-                </button>
+                  </button>
+                </div>
               </div>
               <p className="text-[var(--paragraph)] mt-2 max-w-2xl">{charityData.description}</p>
               

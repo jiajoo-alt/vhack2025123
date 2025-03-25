@@ -54,6 +54,7 @@ export interface ContributionDetail {
   amount: number;
   date: string;
   transactionHash: string;
+  donationPolicy?: 'always-donate' | 'campaign-specific';
 }
 
 export interface SupportedOrganization {
@@ -114,19 +115,19 @@ export const mockDonorContributions = {
   // Detailed contribution history for each campaign
   contributionDetails: {
     1: [
-      { amount: 300, date: "2024-03-15", transactionHash: "0x123..." },
-      { amount: 200, date: "2024-02-10", transactionHash: "0x456..." }
+      { amount: 300, date: "2024-03-15", transactionHash: "0x123...", donationPolicy: 'always-donate' },
+      { amount: 200, date: "2024-02-10", transactionHash: "0x456...", donationPolicy: 'always-donate' },
     ],
     3: [
-      { amount: 700, date: "2024-02-20", transactionHash: "0x789..." },
-      { amount: 500, date: "2024-01-05", transactionHash: "0xabc..." }
+      { amount: 700, date: "2024-02-20", transactionHash: "0x789...", donationPolicy: 'always-donate' },
+      { amount: 500, date: "2024-01-05", transactionHash: "0xabc...", donationPolicy: 'always-donate' }
     ],
     100: [
-      { amount: 1000, date: "2024-03-10", transactionHash: "0xdef..." },
-      { amount: 500, date: "2024-02-15", transactionHash: "0xghi..." }
+      { amount: 1000, date: "2024-03-10", transactionHash: "0xdef...", donationPolicy: 'always-donate' },
+      { amount: 500, date: "2024-02-15", transactionHash: "0xghi...", donationPolicy: 'always-donate' }
     ],
     101: [
-      { amount: 1000, date: "2024-02-15", transactionHash: "0xjkl..." }
+      { amount: 1000, date: "2024-02-15", transactionHash: "0xjkl...", donationPolicy: 'always-donate' }
     ]
   } as Record<number, ContributionDetail[]>,
   
@@ -386,10 +387,14 @@ export interface DonationTracker {
   donations: {
     total: number;
     count: number;
+    // Add fields to track donation policy amounts for campaigns
+    campaignSpecificTotal?: number;
+    alwaysDonateTotal?: number;
     timeline: {
       daily: { 
         date: string; 
         amount: number;
+        donationPolicy?: 'always-donate' | 'campaign-specific';
         isRecurring?: boolean;
         transactionHash?: string;
         message?: string;
@@ -435,6 +440,47 @@ export const mockDonationTrackers: DonationTracker[] = [
       topDonors: [
         { donorId: 1, name: "John Doe", amount: 25000, lastDonation: "2025-03-20" },
         { donorId: 2, name: "Jane Smith", amount: 15000, lastDonation: "2025-03-19" }
+      ]
+    }
+  },
+  {
+    id: 2,
+    recipientId: 1, // Campaign ID 1
+    recipientType: 'campaign',
+    donations: {
+      total: 5000,
+      count: 45,
+      campaignSpecificTotal: 3000, // 60% is campaign-specific
+      alwaysDonateTotal: 2000, // 40% is always-donate
+      timeline: {
+        daily: [
+          { date: '2025-03-20', amount: 500, donationPolicy: 'campaign-specific', transactionHash: '0xab52c8df456e789012a3456f7890b1234c5d6e7f', message: "Supporting this important cause!" },
+          { date: '2025-03-19', amount: 300, donationPolicy: 'always-donate', transactionHash: '0xcd89e123a456b7890cde12345f6789ab01c2345d', isRecurring: true },
+          { date: '2025-03-18', amount: 200, donationPolicy: 'campaign-specific', transactionHash: '0xef12345a6789b0cde1234f5678a9b0c1d2e3f456' },
+          { date: '2025-03-17', amount: 450, donationPolicy: 'campaign-specific', transactionHash: '0x1234abcd5678ef901234abcd5678ef901234abcd' },
+          { date: '2025-03-16', amount: 350, donationPolicy: 'always-donate', transactionHash: '0xabcdef1234567890abcdef1234567890abcdef12', isRecurring: true },
+          { date: '2025-03-15', amount: 275, donationPolicy: 'campaign-specific', transactionHash: '0x9876fedc5432ba109876fedc5432ba109876fedc', message: "Keep up the great work!" },
+          { date: '2025-03-14', amount: 180, donationPolicy: 'always-donate', transactionHash: '0x0123456789abcdef0123456789abcdef01234567' },
+          { date: '2025-03-13', amount: 620, donationPolicy: 'campaign-specific', transactionHash: '0xfedcba9876543210fedcba9876543210fedcba98', message: "This campaign is making a real difference!" },
+          { date: '2025-03-12', amount: 420, donationPolicy: 'always-donate', transactionHash: '0x13579bdf2468ace13579bdf2468ace13579bdf24', isRecurring: true },
+          { date: '2025-03-11', amount: 150, donationPolicy: 'campaign-specific', transactionHash: '0x24680ace13579bdf24680ace13579bdf24680ace' }
+        ],
+        weekly: [
+          { week: '2025-W12', amount: 1500 },
+          { week: '2025-W11', amount: 1200 },
+          { week: '2025-W10', amount: 1800 }
+        ],
+        monthly: [
+          { month: '2025-03', amount: 4500 },
+          { month: '2025-02', amount: 500 }
+        ]
+      },
+      topDonors: [
+        { donorId: 1, name: "John Doe", amount: 2500, lastDonation: "2025-03-20" },
+        { donorId: 3, name: "Alice Johnson", amount: 1500, lastDonation: "2025-03-19" },
+        { donorId: 4, name: "Robert Chen", amount: 800, lastDonation: "2025-03-17" },
+        { donorId: 5, name: "Elena Garcia", amount: 600, lastDonation: "2025-03-13" },
+        { donorId: 6, name: "Michael Wong", amount: 400, lastDonation: "2025-03-12" }
       ]
     }
   }
