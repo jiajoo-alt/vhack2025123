@@ -117,52 +117,17 @@ export const mockDonorContributions = {
     1: [
       { amount: 300, date: "2024-03-15", transactionHash: "0x123...", donationPolicy: 'always-donate' },
       { amount: 200, date: "2024-02-10", transactionHash: "0x456...", donationPolicy: 'always-donate' },
-      { amount: 150, date: "2024-01-20", transactionHash: "0x789...", donationPolicy: 'campaign-specific' },
-      { amount: 250, date: "2023-12-15", transactionHash: "0xabc...", donationPolicy: 'always-donate' },
-      { amount: 175, date: "2023-11-30", transactionHash: "0xdef...", donationPolicy: 'campaign-specific' },
-      { amount: 225, date: "2023-11-01", transactionHash: "0xghi...", donationPolicy: 'always-donate' },
-      { amount: 350, date: "2023-10-15", transactionHash: "0xjkl...", donationPolicy: 'campaign-specific' },
-      { amount: 275, date: "2023-09-20", transactionHash: "0xmno...", donationPolicy: 'always-donate' },
-      { amount: 400, date: "2023-09-01", transactionHash: "0xpqr...", donationPolicy: 'campaign-specific' },
-      { amount: 325, date: "2023-08-15", transactionHash: "0xstu...", donationPolicy: 'always-donate' },
-      { amount: 200, date: "2023-08-01", transactionHash: "0xvwx...", donationPolicy: 'campaign-specific' },
-      { amount: 150, date: "2023-07-15", transactionHash: "0xyz...", donationPolicy: 'always-donate' }
     ],
     3: [
-      { amount: 300, date: "2024-03-15", transactionHash: "0x789a...", donationPolicy: 'always-donate' },
-      { amount: 250, date: "2024-03-01", transactionHash: "0x789b...", donationPolicy: 'campaign-specific' },
-      { amount: 200, date: "2024-02-15", transactionHash: "0x789c...", donationPolicy: 'always-donate' },
-      { amount: 150, date: "2024-02-01", transactionHash: "0x789d...", donationPolicy: 'campaign-specific' },
-      { amount: 175, date: "2024-01-15", transactionHash: "0x789e...", donationPolicy: 'always-donate' },
-      { amount: 225, date: "2024-01-01", transactionHash: "0x789f...", donationPolicy: 'campaign-specific' },
-      { amount: 275, date: "2023-12-15", transactionHash: "0x789g...", donationPolicy: 'always-donate' },
-      { amount: 325, date: "2023-12-01", transactionHash: "0x789h...", donationPolicy: 'campaign-specific' },
-      { amount: 400, date: "2023-11-15", transactionHash: "0x789i...", donationPolicy: 'always-donate' },
-      { amount: 350, date: "2023-11-01", transactionHash: "0x789j...", donationPolicy: 'campaign-specific' }
+      { amount: 700, date: "2024-02-20", transactionHash: "0x789...", donationPolicy: 'always-donate' },
+      { amount: 500, date: "2024-01-05", transactionHash: "0xabc...", donationPolicy: 'always-donate' }
     ],
     100: [
-      { amount: 400, date: "2024-03-15", transactionHash: "0xdef0...", donationPolicy: 'always-donate' },
-      { amount: 350, date: "2024-03-01", transactionHash: "0xdef1...", donationPolicy: 'campaign-specific' },
-      { amount: 300, date: "2024-02-15", transactionHash: "0xdef2...", donationPolicy: 'always-donate' },
-      { amount: 250, date: "2024-02-01", transactionHash: "0xdef3...", donationPolicy: 'campaign-specific' },
-      { amount: 200, date: "2024-01-15", transactionHash: "0xdef4...", donationPolicy: 'always-donate' },
-      { amount: 150, date: "2024-01-01", transactionHash: "0xdef5...", donationPolicy: 'campaign-specific' },
-      { amount: 175, date: "2023-12-15", transactionHash: "0xdef6...", donationPolicy: 'always-donate' },
-      { amount: 225, date: "2023-12-01", transactionHash: "0xdef7...", donationPolicy: 'campaign-specific' },
-      { amount: 275, date: "2023-11-15", transactionHash: "0xdef8...", donationPolicy: 'always-donate' },
-      { amount: 325, date: "2023-11-01", transactionHash: "0xdef9...", donationPolicy: 'campaign-specific' }
+      { amount: 1000, date: "2024-03-10", transactionHash: "0xdef...", donationPolicy: 'always-donate' },
+      { amount: 500, date: "2024-02-15", transactionHash: "0xghi...", donationPolicy: 'always-donate' }
     ],
     101: [
-      { amount: 500, date: "2024-03-15", transactionHash: "0xjkl1...", donationPolicy: 'always-donate' },
-      { amount: 450, date: "2024-03-01", transactionHash: "0xjkl2...", donationPolicy: 'campaign-specific' },
-      { amount: 400, date: "2024-02-15", transactionHash: "0xjkl3...", donationPolicy: 'always-donate' },
-      { amount: 350, date: "2024-02-01", transactionHash: "0xjkl4...", donationPolicy: 'campaign-specific' },
-      { amount: 300, date: "2024-01-15", transactionHash: "0xjkl5...", donationPolicy: 'always-donate' },
-      { amount: 250, date: "2024-01-01", transactionHash: "0xjkl6...", donationPolicy: 'campaign-specific' },
-      { amount: 200, date: "2023-12-15", transactionHash: "0xjkl7...", donationPolicy: 'always-donate' },
-      { amount: 150, date: "2023-12-01", transactionHash: "0xjkl8...", donationPolicy: 'campaign-specific' },
-      { amount: 175, date: "2023-11-15", transactionHash: "0xjkl9...", donationPolicy: 'always-donate' },
-      { amount: 225, date: "2023-11-01", transactionHash: "0xjkl0...", donationPolicy: 'campaign-specific' }
+      { amount: 1000, date: "2024-02-15", transactionHash: "0xjkl...", donationPolicy: 'always-donate' }
     ]
   } as Record<number, ContributionDetail[]>,
   
