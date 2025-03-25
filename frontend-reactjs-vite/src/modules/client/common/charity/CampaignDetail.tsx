@@ -161,7 +161,19 @@ const CampaignDetail: React.FC = () => {
     // In a real app, you would update the campaign data after a successful donation
     console.log(`Donation of $${amount} completed for campaign: ${campaign.name}`);
     console.log(`Donation policy: ${donationPolicy || 'N/A'}`);
-    // You could also show a success message or redirect
+    
+    // Add donation to campaign-specific or always-donate total based on policy
+    // This would be handled by the backend in a real app
+    if (donationPolicy) {
+      // For demonstration, let's show a toast message about the donation policy
+      if (donationPolicy === 'campaign-specific') {
+        toast.success(`Thank you for your campaign-specific donation of $${amount}! You can get a refund if the campaign doesn't reach its goal.`);
+      } else if (donationPolicy === 'always-donate') {
+        toast.success(`Thank you for your always-donate donation of $${amount}! Your donation will support the organization even if the campaign doesn't reach its goal.`);
+      }
+    } else {
+      toast.success(`Thank you for your donation of $${amount}!`);
+    }
   };
 
   // Handle view full leaderboard
@@ -589,19 +601,48 @@ const CampaignDetail: React.FC = () => {
             )}
 
             {/* Donation Tracker */}
-            {userRole === 'charity' && (
+            {(userRole === 'charity' || (userRole === 'donor' && donorContribution)) && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
                 className="mb-8"
               >
-                <DonationTracker 
-                  tracker={mockDonationTrackers.find(t => 
-                    t.recipientId === campaignId && 
-                    t.recipientType === 'campaign'
-                  ) || mockDonationTrackers[0]} 
-                />
+                <h3 className="text-xl font-bold text-[var(--headline)] mb-4 flex items-center gap-2">
+                  <FaChartLine className="text-[var(--highlight)]" />
+                  Donation Breakdown
+                </h3>
+                
+                {/* Find campaign tracker or create a placeholder if not found */}
+                <div className="max-w-full overflow-hidden">
+                  <DonationTracker 
+                    tracker={
+                      mockDonationTrackers.find(t => 
+                        t.recipientId === campaignId && 
+                        t.recipientType === 'campaign'
+                      ) || {
+                        id: 9999,
+                        recipientId: campaignId,
+                        recipientType: 'campaign',
+                        donations: {
+                          total: campaign.currentContributions,
+                          count: 45,
+                          campaignSpecificTotal: Math.round(campaign.currentContributions * 0.6), // 60% is campaign-specific
+                          alwaysDonateTotal: Math.round(campaign.currentContributions * 0.4), // 40% is always-donate
+                          timeline: {
+                            daily: [
+                              { date: new Date().toISOString().split('T')[0], amount: 500, donationPolicy: 'campaign-specific' },
+                              { date: new Date(Date.now() - 86400000).toISOString().split('T')[0], amount: 300, donationPolicy: 'always-donate' }
+                            ],
+                            weekly: [{ week: '2025-W12', amount: 1500 }],
+                            monthly: [{ month: '2025-03', amount: 4500 }]
+                          },
+                          topDonors: []
+                        }
+                      }
+                    } 
+                  />
+                </div>
               </motion.div>
             )}
           </div>

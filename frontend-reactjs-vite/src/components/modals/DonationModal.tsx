@@ -106,7 +106,12 @@ const DonationModal: React.FC<DonationModalProps> = ({
       }
       
       if (onDonationComplete && typeof amount === 'number') {
-        onDonationComplete(amount, campaignId ? donationPolicy : undefined);
+        // Pass the selectedDonationPolicy for campaigns to onDonationComplete
+        if (derivedTargetType === 'campaign') {
+          onDonationComplete(amount, selectedDonationPolicy);
+        } else {
+          onDonationComplete(amount);
+        }
       }
       setIsProcessing(false);
       resetForm();
@@ -293,7 +298,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
                       key={presetAmount}
                       className={`py-3 rounded-lg border ${
                         amount === presetAmount && !customAmount
-                          ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10 text-[var(--highlight)]'
+                          ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10 text-white'
                           : 'border-[var(--stroke)] hover:border-[var(--highlight)]'
                       }`}
                       onClick={() => handleAmountSelect(presetAmount)}
@@ -304,7 +309,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
                   <button
                     className={`py-3 rounded-lg border ${
                       customAmount
-                        ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10 text-[var(--highlight)]'
+                        ? 'border-[var(--highlight)] bg-[var(--highlight)] bg-opacity-10 text-white'
                         : 'border-[var(--stroke)] hover:border-[var(--highlight)]'
                     }`}
                     onClick={() => {
@@ -431,11 +436,19 @@ const DonationModal: React.FC<DonationModalProps> = ({
                 <div className="bg-[var(--background)] p-4 rounded-lg mb-6 text-left">
                   <div className="flex items-start gap-2">
                     <FaInfoCircle className="text-[var(--highlight)] mt-1 flex-shrink-0" />
-                    <p className="text-sm">
-                      {selectedDonationPolicy === 'always-donate' 
-                        ? 'If this campaign does not reach its target by the deadline and not extended, your donation will support other initiatives by the organization.' 
-                        : 'If this campaign does not reach its target by the deadline and not extended, your donation will be refunded to you.'}
-                    </p>
+                    <div>
+                      <p className="text-sm mb-2">
+                        <span className="font-medium">Donation Policy: </span>
+                        <span className={selectedDonationPolicy === 'always-donate' ? 'text-blue-600' : 'text-green-600'}>
+                          {selectedDonationPolicy === 'always-donate' ? 'Always Donate' : 'Campaign Specific'}
+                        </span>
+                      </p>
+                      <p className="text-sm">
+                        {selectedDonationPolicy === 'always-donate' 
+                          ? 'If this campaign does not reach its target by the deadline and not extended, your donation will support other initiatives by the organization.' 
+                          : 'If this campaign does not reach its target by the deadline and not extended, your donation will be refunded to you.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}

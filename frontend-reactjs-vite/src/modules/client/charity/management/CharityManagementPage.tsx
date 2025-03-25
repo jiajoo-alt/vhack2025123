@@ -35,7 +35,7 @@ const CharityManagementPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'deadline' | 'goal' | 'progress'>('deadline');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showFilters, setShowFilters] = useState(false);
-  const [showFundDetails, setShowFundDetails] = useState(false);
+  const [showFundDetails, setShowFundDetails] = useState(true);
   
   // Get the current organization
   const currentOrganization = mockOrganizations.find(org => org.id === CURRENT_CHARITY_ORG_ID);
@@ -319,9 +319,42 @@ const CharityManagementPage: React.FC = () => {
                     <p className="text-2xl font-bold text-[var(--headline)] mb-1">
                       ${campaignFundsRaised.toLocaleString()}
                     </p>
-                    <p className="text-xs text-[var(--paragraph)]">
+                    <p className="text-xs text-[var(--paragraph)] mb-3">
                       Designated for specific campaigns
                     </p>
+                    
+                    {/* Donation Policy Breakdown */}
+                    <div className="mt-2 border-t border-[var(--stroke)] pt-3">
+                      <h4 className="text-xs font-medium text-[var(--paragraph)] mb-2">Donation Policy Breakdown</h4>
+                      
+                      {/* Calculate estimated policy breakdowns based on typical distributions */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Campaign-specific donations */}
+                        <div className="bg-white p-2 rounded-lg border border-[var(--stroke)]">
+                          <div className="flex items-center gap-1 mb-1">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="text-xs font-medium">Campaign-Specific</span>
+                          </div>
+                          <p className="text-sm font-bold text-[var(--headline)]">
+                            ${Math.round(campaignFundsRaised * 0.6).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-[var(--paragraph)]">Refundable if goal not met</p>
+                        </div>
+                        
+                        {/* Always-donate */}
+                        <div className="bg-white p-2 rounded-lg border border-[var(--stroke)]">
+                          <div className="flex items-center gap-1 mb-1">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="text-xs font-medium">Always Donate</span>
+                          </div>
+                          <p className="text-sm font-bold text-[var(--headline)]">
+                            ${Math.round(campaignFundsRaised * 0.4).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-[var(--paragraph)]">Moves to general fund if needed</p>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="mt-4 flex justify-end">
                       <button className="px-3 py-1 bg-[var(--highlight)] text-white rounded-lg text-sm hover:bg-opacity-90 transition-all">
                         View Breakdown
