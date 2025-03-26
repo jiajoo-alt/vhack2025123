@@ -136,7 +136,7 @@ const CharityProfile: React.FC = () => {
               <div className="flex justify-between items-start">
                 <h2 className="text-2xl md:text-3xl font-bold text-[var(--headline)]">{charityData.name}</h2>
                 <div className="flex items-center justify-between gap-4">
-                  <LoginButton />
+                  {/* <LoginButton /> */}
                   <button 
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 rounded-lg bg-[var(--highlight)] text-white hover:bg-opacity-90 flex items-center gap-2 transition-colors"
