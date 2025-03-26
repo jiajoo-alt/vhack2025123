@@ -24,8 +24,6 @@ import CharityHomePage from "./modules/client/charity/CharityHomePage/CharityHom
 import CharityManagementPage from "./modules/client/charity/management/CharityManagementPage";
 import CreateCampaign from "./components/form/CreateCampaign";
 import VendorPage from "./modules/client/charity/Vendor/VendorPage";
-import CharityCommunityAdmin from "./modules/client/charity/community/CharityCommunityAdmin";
-import GeneralFundCommunities from "./modules/client/charity/community/GeneralFundCommunities";
 import VendorDashboard from "./modules/client/vendor/VendorHomePage/VendorDashboard";
 import VendorProfile from "./modules/client/vendor/VendorProfile";
 
@@ -135,10 +133,6 @@ export function App() {
 								path="/charity/community/organization/:id" 
 								element={<OrganizationRedirect />} 
 							/>
-							
-							{/* Keep the admin route for now, but consider updating it later */}
-							<Route path="/charity/community/:type/:id" element={<CharityCommunityAdmin />} />
-							<Route path="/charity/general-communities" element={<GeneralFundCommunities />} />
 						</Route>
 
 						{/* Vendor-Specific Routes */}
