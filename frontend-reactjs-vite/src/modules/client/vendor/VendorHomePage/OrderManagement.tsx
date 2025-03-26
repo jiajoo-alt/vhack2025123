@@ -307,7 +307,7 @@ const OrderManagement: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-sm text-[var(--paragraph)]">
-                      Total: ${transaction.totalPrice.toLocaleString()} | Fund: {transaction.fundSource}
+                      Total: RM{transaction.totalPrice.toLocaleString()} | Fund: {transaction.fundSource}
                     </p>
                     <p className="text-sm text-[var(--paragraph)]">
                       Created by: {transaction.createdBy === 'vendor' ? 'You' : organization?.name} | Date: {transaction.date}

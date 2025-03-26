@@ -113,12 +113,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   <p className="text-[var(--headline)]">{item.name}</p>
                   <p className="text-xs text-[var(--paragraph)]">Quantity: {item.quantity}</p>
                 </div>
-                <p className="text-[var(--headline)]">${(item.price * item.quantity).toLocaleString()}</p>
+                <p className="text-[var(--headline)]">RM{(item.price * item.quantity).toLocaleString()}</p>
               </div>
             ))}
             <div className="p-3 flex justify-between font-bold">
               <p>Total</p>
-              <p>${transaction.totalPrice.toLocaleString()}</p>
+              <p>RM{transaction.totalPrice.toLocaleString()}</p>
             </div>
           </div>
         </div>

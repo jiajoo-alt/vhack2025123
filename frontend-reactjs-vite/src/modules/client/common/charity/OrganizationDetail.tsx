@@ -10,18 +10,21 @@ import DonationModal from "../../../../components/modals/DonationModal";
 import { toast } from "react-toastify";
 import PostFeed from "../../common/community/components/PostFeed";
 import DonationTracker from "../../../../components/donation/DonationTracker";
+import { useVendorChatStore } from "../../../../services/VendorChatService";
+import ChatModal from "../../../client/vendor/VendorHomePage/ChatModal";
 
 const OrganizationDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: organizationIdString } = useParams();
+  const organizationId = Number(organizationIdString);
   const navigate = useNavigate();
   const location = useLocation();
   const { userRole } = useRole();
-  const organizationId = parseInt(id || "0");
+  const [activeTab, setActiveTab] = useState("about");
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
-  const [hasDonated, setHasDonated] = useState(false);
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const { openChat } = useVendorChatStore();
   
   const [communityView, setCommunityView] = useState<'feed' | 'members'>('feed');
-
 
   // Find the organization from our centralized mock data
   const organization = mockOrganizations.find(org => org.id === organizationId);
@@ -83,9 +86,33 @@ const OrganizationDetail: React.FC = () => {
           campaign => campaign.organizationId === organizationId && campaign.id === contribution.id
         )
       );
-      setHasDonated(hasContributed);
+      setIsDonationModalOpen(hasContributed);
     }
   }, [organizationId, userRole]);
+
+  // Add event listener for chat modal
+  useEffect(() => {
+    const handleOpenChat = (event: CustomEvent) => {
+      if (event.detail.organizationId === organizationId) {
+        // Find the chat ID for this organization
+        const chat = useVendorChatStore.getState().chats.find(
+          chat => chat.organizationId === organizationId
+        );
+        if (chat) {
+          setActiveChatId(chat.id);
+        }
+      }
+    };
+
+    window.addEventListener('openVendorChat', handleOpenChat as EventListener);
+    return () => {
+      window.removeEventListener('openVendorChat', handleOpenChat as EventListener);
+    };
+  }, [organizationId]);
+
+  const handleContactClick = () => {
+    openChat(organizationId);
+  };
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -124,6 +151,17 @@ const OrganizationDetail: React.FC = () => {
                   >
                     <FaHandHoldingHeart className="text-xl" />
                     Support {organization.name}
+                  </motion.button>
+                )}
+                {userRole === 'vendor' && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleContactClick}
+                    className="px-6 py-3 bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
+                  >
+                    <FaComments className="text-xl" />
+                    Contact {organization.name}
                   </motion.button>
                 )}
               </div>
@@ -170,7 +208,7 @@ const OrganizationDetail: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <FaHandHoldingHeart className="text-2xl" />
                     <div>
-                      <p className="text-2xl font-bold">${organization.totalRaised.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">RM{organization.totalRaised.toLocaleString()}</p>
                       <p className="text-sm opacity-90">Total Raised</p>
                     </div>
                   </div>
@@ -303,7 +341,7 @@ const OrganizationDetail: React.FC = () => {
           className="mb-8"
         >
           {userRole === 'donor' ? (
-            hasDonated ? (
+            isDonationModalOpen ? (
               <div className="bg-[var(--main)] rounded-xl border border-[var(--stroke)] overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
@@ -435,9 +473,17 @@ const OrganizationDetail: React.FC = () => {
           organizationId={organizationId}
           organizationName={organization.name}
           onDonationComplete={(amount) => {
-            toast.success(`Thank you for your donation of $${amount} to ${organization.name}!`);
+            toast.success(`Thank you for your donation of RM${amount} to ${organization.name}!`);
             setIsDonationModalOpen(false);
           }}
+        />
+      )}
+
+      {/* Chat Modal */}
+      {activeChatId !== null && (
+        <ChatModal 
+          chatId={activeChatId} 
+          onClose={() => setActiveChatId(null)} 
         />
       )}
     </div>

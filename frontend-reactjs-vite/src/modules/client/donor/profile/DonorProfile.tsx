@@ -65,7 +65,7 @@ const DonorProfile: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <Stat icon={<FaHandHoldingHeart />} value={`$${userData.totalDonations.toLocaleString()}`} label="Total Donated" />
+                <Stat icon={<FaHandHoldingHeart />} value={`RM${userData.totalDonations.toLocaleString()}`} label="Total Donated" />
                 <Stat icon={<FaTrophy />} value={userData.totalCampaigns} label="Campaigns Supported" />
                 <Stat icon={<FaUsers />} value={userData.communitiesJoined} label="Communities" />
                 <Stat icon={<FaComments />} value={userData.postsCount} label="Posts" />

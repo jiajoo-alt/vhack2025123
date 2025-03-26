@@ -199,7 +199,7 @@ const CharityProfile: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <Stat icon={<FaHandHoldingHeart />} value={`$${charityData.totalRaised?.toLocaleString() || '0'}`} label="Total Raised" />
+                <Stat icon={<FaHandHoldingHeart />} value={`RM${charityData.totalRaised?.toLocaleString() || '0'}`} label="Total Raised" />
                 <Stat icon={<FaHandHoldingHeart />} value={activeCampaigns} label="Active Campaigns" />
                 <Stat icon={<FaUsers />} value={supporters} label="Supporters" />
                 <Stat icon={<FaUsers />} value={communities} label="Communities" />
