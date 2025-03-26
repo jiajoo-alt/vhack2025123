@@ -26,6 +26,10 @@ import CreateCampaign from "./components/form/CreateCampaign";
 import VendorPage from "./modules/client/charity/Vendor/VendorPage";
 import VendorDashboard from "./modules/client/vendor/VendorHomePage/VendorDashboard";
 import VendorProfile from "./modules/client/vendor/VendorProfile";
+import OrderHistoryDetails from "./modules/client/vendor/OrderManagement/OrderHistoryDetails";
+import OrderHistoryCard from "./modules/client/vendor/OrderManagement/OrderHistoryCard";
+import OrderTracker from "./modules/client/vendor/OrderManagement/OrderTracker";
+import OrderTrackerDetails from "./modules/client/vendor/OrderManagement/OrderTrackerDetails";
 
 const CommunityRedirect = () => {
 	const { id } = useParams();
@@ -139,6 +143,12 @@ export function App() {
 						<Route element={<ProtectedRoute allowedRoles={['vendor']} redirectPath="/" />}>
 							<Route path="/Vhack-2025/vendor/dashboard" element={<VendorDashboard />} />
 							<Route path="/Vhack-2025/vendor/profile" element={<VendorProfile />} />
+              <Route path="/vendor/profile" element={<VendorProfile />} />
+              <Route path="/vendor/order-history/:id" element={<OrderHistoryCard />} />
+              <Route path="/vendor/order-history-details" element={<OrderHistoryDetails />} />
+              <Route path="/vendor/order-tracker" element={<OrderTracker />} />
+              <Route path="/vendor/order-tracker-details" element={<OrderTrackerDetails />} />
+
 						</Route>
 
 						{/* Donor-Specific Routes */}
