@@ -30,6 +30,7 @@ import OrderHistoryDetails from "./modules/client/vendor/OrderManagement/OrderHi
 import OrderHistoryCard from "./modules/client/vendor/OrderManagement/OrderHistoryCard";
 import OrderTracker from "./modules/client/vendor/OrderManagement/OrderTracker";
 import OrderTrackerDetails from "./modules/client/vendor/OrderManagement/OrderTrackerDetails";
+import TransactionHistoryDetails from "./modules/client/vendor/FinancialManagement/TransactionHistoryDetails";
 
 const CommunityRedirect = () => {
 	const { id } = useParams();
@@ -148,6 +149,8 @@ export function App() {
               <Route path="/vendor/order-history-details" element={<OrderHistoryDetails />} />
               <Route path="/vendor/order-tracker" element={<OrderTracker />} />
               <Route path="/vendor/order-tracker-details" element={<OrderTrackerDetails />} />
+			  <Route path="/vendor/transaction-history-details" element={<TransactionHistoryDetails />} />
+
 
 						</Route>
 
