@@ -22,7 +22,7 @@ const VendorProfile: React.FC = () => {
     totalOrders: 15,
     pendingOrders: 5,
     completedOrders: 10,
-    totalEarnings: "RM50,000",
+    totalEarnings: "RM120,000",
   };
 
   const handleViewAllOrders = () => {
@@ -35,7 +35,7 @@ const VendorProfile: React.FC = () => {
       <div className="relative bg-gradient-to-r from-[var(--highlight)] to-[var(--tertiary)] h-48">
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-white text-3xl font-bold pt-12 relative z-10 drop-shadow-md">Vendor Dashboard</h1>
+          <h1 className="text-white text-3xl font-bold pt-12 relative z-10 drop-shadow-md">Vendor Profile</h1>
           <p className="text-white text-opacity-90 relative z-10 drop-shadow-sm">Manage your orders and finances</p>
         </div>
       </div>
