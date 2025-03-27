@@ -29,24 +29,6 @@ In Malaysia and beyond, donations often go untracked and charities struggle to p
 
 ---
 
-## 🔗 Deployment
-
-The platform is currently under development and is not live yet.
-
-Deployment is planned for a future release. Stay tuned for updates on:
-
-```
-https://your-deployment-url.com (coming soon)
-```
-
----
-
-## 🖼️ Preview
-
-**Coming soon** – Interactive GIF previews and walkthrough of the Dermanow platform.
-
----
-
 ## ⚙️ Prerequisites
 
 Before running the project locally, ensure you have:
