@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaBuilding, FaHandHoldingHeart, FaComments } from "react-icons/fa";
 import { useVendorChatStore } from "../../services/VendorChatService";
 import ChatModal from "../../modules/client/vendor/VendorHomePage/ChatModal";
+import { useRole } from "../../contexts/RoleContext";
 
 interface OrganizationCardProps {
   id: number;
@@ -24,6 +25,7 @@ const OrganizationCard: React.FC<OrganizationCardProps> = ({
   const navigate = useNavigate();
   const { openChat } = useVendorChatStore();
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const { userRole } = useRole();
 
   // Add event listener for chat modal
   useEffect(() => {
@@ -86,17 +88,20 @@ const OrganizationCard: React.FC<OrganizationCardProps> = ({
             <span className="font-semibold">{campaigns}</span> active campaigns
           </div>
           <div className="text-sm flex items-center gap-1">
-            <span className="font-semibold">${totalRaised.toLocaleString()}</span> raised
+            <span className="font-semibold">RM{totalRaised.toLocaleString()}</span> raised
           </div>
         </div>
 
-        <button
-          onClick={handleContactClick}
-          className="contact-button mt-4 w-full bg-[var(--highlight)] text-white py-2 rounded-lg hover:bg-[var(--highlight-dark)] transition-colors flex items-center justify-center gap-2"
-        >
-          <FaComments />
-          Contact Organization
-        </button>
+        {/* Only show contact button for vendors */}
+        {userRole === 'vendor' && (
+          <button
+            onClick={handleContactClick}
+            className="contact-button mt-4 w-full bg-[var(--highlight)] text-white py-2 rounded-lg hover:bg-[var(--highlight-dark)] transition-colors flex items-center justify-center gap-2"
+          >
+            <FaComments />
+            Contact Organization
+          </button>
+        )}
       </div>
 
       {/* Chat Modal */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaTimes, FaUserCircle, FaPaperPlane, FaPaperclip, FaFileInvoiceDollar } from "react-icons/fa";
+import { FaTimes, FaUserCircle, FaPaperPlane, FaPaperclip, FaMoneyBillWave } from "react-icons/fa";
 import { useVendorChatStore } from "../../../../services/VendorChatService";
 import TransactionProposalMessage from "./TransactionProposalMessage";
 import ChatTransactionModal from "./ChatTransactionModal";
@@ -140,7 +140,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ chatId, onClose }) => {
               onClick={() => setShowTransactionModal(true)}
               className="p-2 text-gray-500 hover:text-[var(--highlight)] transition-all"
             >
-              <FaFileInvoiceDollar />
+              <FaMoneyBillWave />
             </button>
             <button 
               type="button"
