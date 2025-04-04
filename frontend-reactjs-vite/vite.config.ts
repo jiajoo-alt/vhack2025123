@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/Vhack-2025/",  
+  base: "/",  
   resolve: {
     alias: {
       buffer: "buffer" // Polyfill for buffer compatibility
